@@ -256,9 +256,25 @@
     });
   }
 
-  /* ---------------- 8. 스크롤 리빌 · 카운트업 · 연혁 레일 ---------------- */
+  /* ---------------- 8. 구역 탭 — 보고 있는 구역의 탭을 켠다 ---------------- */
+  var spyTabs = [].slice.call(document.querySelectorAll('.ptabs a[href*="#"]'));
+  if (spyTabs.length) {
+    var spySecs = spyTabs.map(function (a) { return document.getElementById((a.getAttribute("href") || "").split("#")[1] || ""); });
+    var spyTick = false;
+    var spy = function () {
+      spyTick = false;
+      var k = 0;
+      spySecs.forEach(function (sec, i) { if (sec && sec.getBoundingClientRect().top < window.innerHeight * 0.4) k = i; });
+      spyTabs.forEach(function (a, i) { if (i === k) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    };
+    spy();
+    window.addEventListener("scroll", function () { if (!spyTick) { spyTick = true; requestAnimationFrame(spy); } }, { passive: true });
+  }
+
+  /* ---------------- 9. 스크롤 리빌 · 카운트업 · 연혁 레일 ---------------- */
   var SEL = ".sec__head, .news a, .quick a, .desig li, .gate, .btnrow, .tl__item, .ov li, .axc__i, .vals li, .photos a, .contact, .aix__head > *, " +
-    ".target > *, .pcard, .field li, .eqteaser li, .eqf, .flow";
+    ".target > *, .pcard, .field li, .eqteaser li, .eqf, .flow, " +
+    ".letter, .greet__lead, .bgcards > li, .mv__i, .org__lv, .org__dept, .mapcard, .info > div, .cycle, .effects li, .hubwrap, .checks li, .chain--big li, .banner";
   if (!REDUCE && "IntersectionObserver" in window) {
     var els = [].slice.call(document.querySelectorAll(SEL)).filter(function (e) { return !e.closest(".mkv, .story"); });
     els.forEach(function (e) { e.setAttribute("data-rv", ""); });

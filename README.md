@@ -6,8 +6,11 @@
 | 파일 | 페이지 |
 | --- | --- |
 | `index.html` | 메인 |
+| `about.html` | 재단소개 (인사말 · 설립배경 및 경과 · 비전·목표 · 조직도 · 오시는 길) |
 | `measure.html` | 측정·분석사업 › 대기측정대행 |
 | `equipment.html` | 측정·분석사업 › 주요장비 |
+| `regen.html` | 재생사업 (활성탄재생사업 · 수집운반) |
+| `consult.html` | 환경컨설팅 (컨설팅 · 환경교육) |
 
 - `assets/style.css` — 스타일
 - `assets/motion.js` — 애니메이션 (모션 필름, 스크롤 스토리, 장면 순환, 장비 필터 등)
