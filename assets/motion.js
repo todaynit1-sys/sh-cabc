@@ -328,4 +328,48 @@
     window.addEventListener("scroll", onTl, { passive: true });
     window.addEventListener("resize", onTl);
   }
+
+  /* ---------------- 10. 설치형 웹앱 — 서비스 워커 · 설치 안내 ---------------- */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+  var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  if (standalone) root.classList.add("is-app");
+  var installBtns = [].slice.call(document.querySelectorAll("[data-install]"));
+  var chip = document.querySelector("[data-install-chip]");
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var deferred = null;
+  var dismissed = false;
+  try { dismissed = localStorage.getItem("cabc-install-x") === "1"; } catch { dismissed = false; }
+  var hideInstall = function () {
+    installBtns.forEach(function (b) { b.hidden = true; });
+    if (chip) chip.hidden = true;
+  };
+  var showInstall = function () {
+    installBtns.forEach(function (b) { b.hidden = false; });
+    if (chip && !dismissed && window.innerWidth < 900) chip.hidden = false;
+  };
+  if (!standalone) {
+    window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; showInstall(); });
+    if (ios && /safari/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent)) showInstall();
+  }
+  window.addEventListener("appinstalled", hideInstall);
+  installBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (deferred) {
+        deferred.prompt();
+        deferred.userChoice.then(function (c) { if (c.outcome === "accepted") hideInstall(); deferred = null; });
+      } else if (ios && chip) {
+        chip.hidden = false;
+        chip.classList.add("is-ios");
+      }
+    });
+  });
+  var chipX = document.querySelector("[data-install-close]");
+  if (chipX && chip) {
+    chipX.addEventListener("click", function () {
+      chip.hidden = true;
+      try { localStorage.setItem("cabc-install-x", "1"); } catch { /* 저장 불가 — 이번에만 닫음 */ }
+    });
+  }
 })();
