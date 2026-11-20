@@ -11,6 +11,7 @@
 | `equipment.html` | 측정·분석사업 › 주요장비 |
 | `regen.html` | 재생사업 (활성탄재생사업 · 수집운반) |
 | `consult.html` | 환경컨설팅 (컨설팅 · 환경교육) |
+| `game/index.html` | 업무 체험 게임 — 시화호 체험관 (3D, three.js) |
 
 - `assets/style.css` — 스타일
 - `assets/motion.js` — 애니메이션 (모션 필름, 스크롤 스토리, 장면 순환, 장비 필터 등)

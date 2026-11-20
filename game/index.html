@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>맑고푸른곶 시화호 체험관</title>
+<meta name="description" content="캐릭터로 시화호 마을을 걸으며 재단법인 맑고푸른곶의 업무(측정·분석, 활성탄 재생, 환경컨설팅, 환경교육)를 체험하는 3D 게임">
+<meta name="theme-color" content="#23579C">
+<link rel="icon" href="../icons/favicon-32.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{--ink:#14202b;--brand:#2e6fb7;--deep:#23579c;--navy:#0c3360;--leaf:#0a9466;--mint:#7ee3b4;--sky:#8fd6f4;--amber:#ffb547;
+  --font:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#0c3360;font-family:var(--font);color:var(--ink);-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;-webkit-user-select:none}
+#app{position:fixed;inset:0}
+#app canvas{display:block;width:100%;height:100%}
+button{font:inherit;cursor:pointer}
+[hidden]{display:none!important}
+
+/* 시작 화면 */
+#start{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:linear-gradient(160deg,rgba(12,51,96,.92),rgba(35,87,156,.86) 55%,rgba(11,118,82,.86));overflow:auto}
+.startcard{width:min(460px,100%);padding:28px 24px 22px;border-radius:22px;background:#fff;box-shadow:0 30px 70px -30px rgba(0,0,0,.6);text-align:center}
+.startcard .emb{width:74px;height:74px;margin:0 auto 10px;border-radius:50%;background:#fff;box-shadow:0 0 0 6px #eaf2fb}
+.startcard h1{margin:4px 0 2px;font-size:26px;letter-spacing:-.05em}
+.startcard h1 small{display:block;font-size:13px;color:var(--leaf);letter-spacing:.02em;margin-bottom:4px}
+.startcard p{margin:8px 0 0;color:#4a5864;font-size:14.5px;line-height:1.65;word-break:keep-all}
+.pick{margin:18px 0 6px;font-size:13px;font-weight:800;color:var(--deep);text-align:left}
+.swatches{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.swatches button{width:46px;height:46px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #dae3ea;transition:transform .15s}
+.swatches button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--deep);transform:scale(1.08)}
+#nick{width:100%;margin-top:6px;padding:12px 14px;border:1.5px solid #dae3ea;border-radius:12px;font:inherit;font-size:16px;text-align:center}
+#nick:focus{outline:none;border-color:var(--brand)}
+.go{width:100%;margin-top:16px;min-height:54px;border:0;border-radius:14px;background:var(--deep);color:#fff;font-size:18px;font-weight:800;letter-spacing:-.03em}
+.go:active{transform:scale(.98)}
+.howto{margin-top:12px;font-size:12.5px;color:#66737e;line-height:1.6}
+.reset{margin-top:6px;border:0;background:none;color:#99a6b0;font-size:12px;text-decoration:underline}
+
+/* HUD */
+#hud{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));z-index:10;display:grid;gap:8px;max-width:min(330px,calc(100vw - 150px))}
+.panel{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);box-shadow:0 10px 26px -14px rgba(0,0,0,.5)}
+.stamps{display:flex;gap:6px;align-items:center}
+.stamps b{font-size:12px;color:var(--deep);margin-right:2px;white-space:nowrap}
+.stamp{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:16px;background:#eef2f5;color:#b3bec7;border:2px dashed #cdd7df;transition:all .4s}
+.stamp.on{background:var(--leaf);color:#fff;border:2px solid #fff;box-shadow:0 0 0 2px var(--leaf);animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.3)}to{transform:none}}
+#mission{font-size:13.5px;line-height:1.5;word-break:keep-all}
+#mission b{color:var(--deep)}
+#drops{font-size:12px;color:#5b6b78}
+#top{position:fixed;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));z-index:10;display:flex;gap:6px}
+#top button{min-height:40px;padding:0 12px;border:0;border-radius:12px;background:rgba(255,255,255,.92);font-size:13px;font-weight:800;color:var(--navy);box-shadow:0 10px 26px -14px rgba(0,0,0,.5)}
+#prompt{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:10;padding:9px 16px;border-radius:999px;background:rgba(4,24,43,.85);color:#fff;font-size:14px;font-weight:700;white-space:nowrap;pointer-events:none}
+#prompt kbd{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:6px;background:var(--mint);color:#04324a;font-family:inherit;font-weight:800}
+#toast{position:fixed;left:50%;top:max(16%,90px);transform:translateX(-50%);z-index:30;padding:12px 18px;border-radius:14px;background:rgba(4,24,43,.92);color:#fff;font-size:15px;font-weight:700;text-align:center;max-width:min(420px,90vw);line-height:1.5;pointer-events:none;opacity:0;transition:opacity .3s}
+#toast.show{opacity:1}
+#gauge{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:20;width:min(300px,80vw);padding:14px 16px;border-radius:16px;background:rgba(4,24,43,.9);color:#fff;text-align:center;font-weight:700}
+#gauge i{display:block;height:10px;margin-top:10px;border-radius:5px;background:linear-gradient(90deg,var(--sky),var(--mint));transform-origin:left;transform:scaleX(0)}
+#gauge s{display:block;height:10px;margin-top:-10px;border-radius:5px;background:rgba(255,255,255,.15)}
+
+/* 대화창 */
+#dialog{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;width:min(640px,calc(100vw - 24px));padding:16px 18px 14px;border-radius:18px;background:#fff;box-shadow:0 24px 60px -20px rgba(0,0,0,.6);animation:dlgIn .25s ease-out}
+@keyframes dlgIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+#dname{display:inline-block;padding:3px 12px;border-radius:999px;background:var(--deep);color:#fff;font-size:13px;font-weight:800}
+#dtext{margin:10px 2px 0;font-size:16px;line-height:1.75;word-break:keep-all;white-space:pre-line;min-height:3.4em}
+#dchoices{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#dchoices button{flex:1 1 auto;min-height:46px;padding:0 16px;border:1.5px solid #dae3ea;border-radius:12px;background:#f6f9fb;font-size:15px;font-weight:800;color:var(--navy)}
+#dchoices button:hover,#dchoices button:focus-visible{border-color:var(--brand);background:#eaf2fb;outline:none}
+#dchoices button.big{font-size:22px}
+#dnext{display:block;margin:10px 0 0 auto;min-height:40px;padding:0 18px;border:0;border-radius:12px;background:var(--deep);color:#fff;font-weight:800}
+
+/* 카드(재단 소개 · 체험 기념 카드) */
+#card{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:rgba(4,24,43,.6);backdrop-filter:blur(4px)}
+.cardbox{width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:24px 22px 20px;border-radius:20px;background:#fff;box-shadow:0 30px 70px -20px rgba(0,0,0,.6)}
+.cardbox h2{margin:0;font-size:22px;letter-spacing:-.04em}
+.cardbox h3{margin:18px 0 6px;font-size:15px;color:var(--deep)}
+.cardbox p,.cardbox li{font-size:14.5px;line-height:1.75;color:#3c4a56;word-break:keep-all}
+.cardbox ul{margin:0;padding-left:18px}
+.cardbox img{display:block;width:100%;border-radius:12px;margin-top:12px}
+.cardbtns{display:flex;gap:8px;margin-top:16px}
+.cardbtns button,.cardbtns a{flex:1;display:grid;place-items:center;min-height:46px;border:0;border-radius:12px;background:var(--deep);color:#fff;font-weight:800;text-decoration:none;font-size:15px}
+.cardbtns .line{background:#eef2f5;color:var(--navy)}
+
+/* 모바일 조작 */
+#joy{position:fixed;left:calc(22px + env(safe-area-inset-left));bottom:calc(26px + env(safe-area-inset-bottom));z-index:12;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.5);touch-action:none}
+#joy i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 6px 16px rgba(0,0,0,.3)}
+#act{position:fixed;right:calc(22px + env(safe-area-inset-right));bottom:calc(36px + env(safe-area-inset-bottom));z-index:12;width:84px;height:84px;border-radius:50%;border:0;background:var(--leaf);color:#fff;font-size:15px;font-weight:800;box-shadow:0 10px 24px -8px rgba(0,0,0,.55);line-height:1.2;padding:6px}
+#act:disabled{background:rgba(255,255,255,.35);color:rgba(255,255,255,.85)}
+@media (hover:hover) and (pointer:fine){#joy,#act{display:none}}
+@media (max-width:560px){#top button span,#top .hm{display:none}#top button{padding:0 10px}#mission{font-size:12.5px}.stamp{width:30px;height:30px;font-size:14px}}
+/* 업무 체험 미니게임 */
+#mg{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:16px;background:rgba(4,24,43,.55);backdrop-filter:blur(3px)}
+.mgbox{width:min(560px,100%);padding:18px 18px 16px;border-radius:20px;background:#fff;box-shadow:0 30px 70px -20px rgba(0,0,0,.6);animation:dlgIn2 .25s ease-out}
+@keyframes dlgIn2{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.mgtag{display:inline-block;padding:3px 10px;border-radius:999px;background:#e8f6ef;color:var(--leaf);font-size:12px;font-weight:800}
+#mgtitle{display:block;margin-top:6px;font-size:19px;letter-spacing:-.04em}
+#mgsub{display:block;margin-top:4px;font-size:14px;color:#4a5864;line-height:1.6;word-break:keep-all}
+#mgstage{position:relative;margin-top:12px;height:190px;border-radius:14px;background:linear-gradient(180deg,#0c3360,#14467e);overflow:hidden;color:#fff}
+#mgbtns{display:flex;gap:8px;margin-top:12px}
+#mgbtns button{flex:1;min-height:58px;border:0;border-radius:14px;background:var(--deep);color:#fff;font-size:16px;font-weight:800;touch-action:none;transition:background .15s,transform .1s}
+#mgbtns button:active,#mgbtns button.on{background:var(--leaf);transform:scale(.98)}
+#mgbtns button.alt{background:#e5533d}
+#mgbtns button kbd{display:inline-block;margin-left:6px;padding:0 6px;border-radius:5px;background:rgba(255,255,255,.2);font-family:inherit;font-size:12px}
+.mgk{position:absolute;left:16px;top:12px;right:16px;display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;opacity:.9}
+.trk{position:absolute;left:16px;right:16px;top:70px;height:36px;border-radius:18px;background:rgba(255,255,255,.12)}
+.zone{position:absolute;top:0;bottom:0;width:22%;margin-left:-11%;border-radius:18px;background:rgba(126,227,180,.3);border:2px solid #7ee3b4;transition:background .2s}
+.zone.hit{background:rgba(126,227,180,.65)}
+.ndl{position:absolute;top:-9px;bottom:-9px;width:8px;margin-left:-4px;border-radius:4px;background:#ffb547;box-shadow:0 0 12px #ffb547}
+.trkl{position:absolute;left:16px;right:16px;top:114px;display:flex;justify-content:space-between;font-size:11.5px;opacity:.7}
+.pg{position:absolute;left:16px;right:16px;bottom:18px;height:12px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden}
+.pg i{display:block;height:100%;background:linear-gradient(90deg,var(--sky),var(--mint));transform-origin:left;transform:scaleX(0)}
+.belt{position:absolute;left:0;right:0;bottom:34px;height:16px;background:repeating-linear-gradient(90deg,#5b6b78 0 18px,#46545f 18px 36px);animation:belt .6s linear infinite}
+@keyframes belt{to{background-position:36px 0}}
+.item{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);text-align:center;font-size:58px;line-height:1;transition:transform .35s,opacity .35s}
+.item small{display:block;margin-top:8px;font-size:15px;font-weight:800}
+.item.in{transform:translate(-50%,-50%) translateX(-140px);opacity:0}
+.item.out{transform:translate(-50%,-50%) translateY(-90px) rotate(-20deg);opacity:0}
+.item.new{transform:translate(-50%,-50%) translateX(160px);opacity:0;transition:none}
+.fb{position:absolute;left:0;right:0;bottom:56px;text-align:center;font-size:13.5px;font-weight:700;color:var(--mint)}
+.fb.bad{color:#ffb4a8}
+.pipe{position:absolute;inset:0;width:100%;height:100%}
+.puff{position:absolute;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:radial-gradient(circle,rgba(230,214,170,.95) 30%,rgba(230,214,170,0) 70%);font-size:24px;animation:puff 1.9s ease-out forwards;cursor:pointer}
+@keyframes puff{0%{transform:scale(.3);opacity:0}15%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(1.4) translateY(-14px);opacity:0}}
+.puff.got{animation:none;background:radial-gradient(circle,rgba(126,227,180,.95) 30%,rgba(126,227,180,0) 70%);transform:scale(1.2)}
+#nogl{position:fixed;inset:auto 16px 16px;z-index:60;padding:14px;border-radius:12px;background:#fff;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<section id="start" aria-labelledby="st-title">
+  <div class="startcard">
+    <svg class="emb" viewBox="480 135 540 540" aria-hidden="true">
+      <path fill="#3B63AE" stroke="#3B63AE" stroke-width="6" stroke-linejoin="round" d="M507.4 439 A245 245 0 1 1 771 649 L769.5 634.8 A210 210 0 1 0 523.3 440Z"/>
+      <path fill="#8B7A5E" d="M565 522 A190 190 0 0 1 822 266 A212 212 0 0 0 565 522Z"/>
+      <path fill="#8B7A5E" d="M606 576 A172 172 0 0 0 887 440 A202 202 0 0 1 606 576Z"/>
+      <path fill="#008B5E" d="M648 556 C690 520 672 384 735 340 C775 314 820 307 856 314 C826 336 826 362 823 402 C815 470 770 524 712 538 C690 545 668 552 648 556Z"/>
+      <path fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" d="M656 548 C724 498 772 440 803 350"/>
+      <path fill="#008B5E" d="M649 552 C640 522 602 506 605 456 C608 421 625 396 643 384 C640 402 652 422 666 446 C681 472 679 506 662 529Z"/>
+    </svg>
+    <h1 id="st-title"><small>재단법인 맑고푸른곶</small>시화호 체험관</h1>
+    <p>시화호 마을을 걸으며 재단의 네 가지 업무를 체험해 보세요.<br>업무를 하나 마칠 때마다 뿌연 하늘이 맑아집니다.</p>
+    <div class="pick">내 캐릭터 옷 색</div>
+    <div class="swatches" id="swatches"></div>
+    <div class="pick">이름 (선택)</div>
+    <input id="nick" maxlength="10" placeholder="체험자" autocomplete="off">
+    <button class="go" id="go" type="button">입장하기</button>
+    <div class="howto">PC: W·A·S·D(방향키)로 이동, Shift 달리기, E·Space 말 걸기<br>휴대폰: 왼쪽 원을 밀어 이동, 오른쪽 버튼으로 말 걸기</div>
+    <button class="reset" id="reset" type="button">기록 지우고 처음부터</button>
+  </div>
+</section>
+
+<div id="hud" hidden>
+  <div class="panel stamps" id="stamps"><b>체험 스탬프</b></div>
+  <div class="panel"><div id="mission"></div><div id="drops"></div></div>
+</div>
+<div id="top" hidden>
+  <a href="../index.html" id="b-home" style="display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px;border-radius:12px;background:rgba(255,255,255,.92);font-size:13px;font-weight:800;color:var(--navy);text-decoration:none;box-shadow:0 10px 26px -14px rgba(0,0,0,.5)">🏠<span class="hm"> 홈페이지</span></a>
+  <button type="button" id="b-about">🏢<span> 재단 소개</span></button>
+  <button type="button" id="b-help">❔<span> 도움말</span></button>
+  <button type="button" id="b-sound" aria-pressed="true">🔊</button>
+</div>
+<div id="prompt" hidden></div>
+<div id="toast" role="status"></div>
+<div id="gauge" hidden><span id="gtext"></span><s></s><i id="gbar"></i></div>
+<div id="dialog" hidden role="dialog" aria-live="polite">
+  <span id="dname"></span>
+  <p id="dtext"></p>
+  <div id="dchoices"></div>
+  <button id="dnext" type="button">다음 ▶</button>
+</div>
+<div id="mg" hidden role="dialog" aria-labelledby="mgtitle"><div class="mgbox">
+  <span class="mgtag">업무 체험</span><b id="mgtitle"></b><span id="mgsub"></span>
+  <div id="mgstage"></div><div id="mgbtns"></div>
+</div></div>
+<div id="card" hidden><div class="cardbox" id="cardbox"></div></div>
+<div id="joy" hidden><i></i></div>
+<button id="act" type="button" hidden disabled>말 걸기</button>
+<div id="nogl" hidden></div>
+
+<script>
+  (function () {
+    /* 점검용(?debug): 화면이 가려져 있어도 루프가 돌게 */
+    if (location.search.indexOf('debug') > -1) window.requestAnimationFrame = function (cb) { return setTimeout(function () { cb(performance.now()); }, 16); };
+    var map = { imports: { three: './vendor/three/three.module.min.js' } };
+    var s = document.createElement('script'); s.type = 'importmap'; s.textContent = JSON.stringify(map);
+    document.currentScript.after(s);
+    setTimeout(function () {
+      if (!window.__ready) { var n = document.getElementById('nogl'); n.textContent = '3D 화면을 불러오지 못했어요. 웹 주소로 열거나, 최신 크롬·엣지·사파리에서 새로고침해 주세요.'; n.hidden = false; }
+    }, 12000);
+  })();
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+/* ============================================================
+   맑고푸른곶 시화호 체험관
+   재단 사옥(가운데) · 측정·분석(동북) · 환경에너지센터(서북) · 컨설팅(동남) · 환경교육관(서남) · 시화호(남쪽)
+   ============================================================ */
+
+/* ---------- 저장 ---------- */
+const KEY = 'cabc-game-v1';
+const COLORS = ['#2e6fb7', '#0a9466', '#e5533d', '#f2b632', '#8b5cf6', '#ec6fa1'];
+const blank = () => ({ name: '', color: COLORS[0], stamps: {}, drops: [], step: {} });
+let S = blank();
+try { S = Object.assign(blank(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { S = blank(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* 저장 불가 */ } };
+
+/* ---------- 업무 미션 ---------- */
+const ZONES = {
+  measure: { name: '측정·분석', icon: '🔬', title: '굴뚝 시료 채취·분석' },
+  regen: { name: '활성탄 재생', icon: '♻️', title: '폐활성탄 수거·재생' },
+  consult: { name: '환경컨설팅', icon: '🩺', title: '사업장 환경관리 진단' },
+  edu: { name: '환경교육', icon: '📘', title: '환경관리인 OX 교실' },
+};
+const ORDER = ['measure', 'regen', 'consult', 'edu'];
+
+/* 하늘 물방울 — 재단 이야기 (sh-cabc.or.kr 공개 정보) */
+const DROPS = [
+  { p: [-8, 6], t: '2004년, 시화지구 지속가능발전협의회가 4,471억원 규모의 환경개선 특별대책 로드맵에 합의했어요.' },
+  { p: [12, -30], t: '2004년 12월부터 300억원 규모의 대기개선기금이 운영됐어요.' },
+  { p: [-38, -26], t: '재단법인 맑고푸른곶은 2025년 9월 9일 창립총회를 열었어요.' },
+  { p: [40, -30], t: '2026년 2월 법인설립 허가를 받고, 4월에 업무를 시작했어요.' },
+  { p: [-40, 20], t: '핵심가치는 공정 · 상생 · 사회적 책임 · 연대예요.' },
+  { p: [40, 22], t: '미션은 "지역공동체와 함께 뿌리내리다" — 자립형 통합환경 거버넌스를 구현해요.' },
+  { p: [-14, 24], t: '비전은 "환경혁신을 이끄는 나침반" — 시화지역 환경혁신을 주도하는 전문기관이에요.' },
+  { p: [16, 24], t: '반월·시화산업단지는 1977년부터 조성됐고, 재단은 대기·수질 환경개선을 함께 추진해요.' },
+];
+
+/* ============================================================
+   렌더러 · 장면
+   ============================================================ */
+const app = document.getElementById('app');
+const mobile = matchMedia('(pointer:coarse)').matches;
+const renderer = new THREE.WebGLRenderer({ antialias: !mobile, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.6 : 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = !mobile;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const HAZE = new THREE.Color('#b9a98a'), CLEAR = new THREE.Color('#8ecdf2');
+scene.background = HAZE.clone();
+scene.fog = new THREE.Fog(HAZE.clone(), 18, 70);
+const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 400);
+
+const hemi = new THREE.HemisphereLight('#fff6e0', '#5b7a52', 0.9);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight('#fff1d6', 1.1);
+sun.position.set(-30, 50, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 60, bottom: -60, near: 1, far: 140 });
+scene.add(sun, sun.target);
+
+/* ---------- 재질 · 도형 도우미 ---------- */
+const matCache = new Map();
+const M = (c, o = {}) => {
+  const k = c + JSON.stringify(o);
+  if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, metalness: 0.02, ...o }));
+  return matCache.get(k);
+};
+const shadow = (m) => { m.castShadow = !mobile; m.receiveShadow = true; return m; };
+const box = (w, h, d, c, x, y, z, parent = scene) => { const m = shadow(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), M(c))); m.position.set(x, y, z); parent.add(m); return m; };
+const cyl = (rt, rb, h, c, x, y, z, seg = 20, parent = scene) => { const m = shadow(new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), M(c))); m.position.set(x, y, z); parent.add(m); return m; };
+const colliders = [];
+const solid = (x, z, w, d) => colliders.push({ x1: x - w / 2, x2: x + w / 2, z1: z - d / 2, z2: z + d / 2 });
+
+/* 글자 표지 (스프라이트) */
+function label(text, { bg = '#23579c', fg = '#fff', size = 1, sub = '' } = {}) {
+  const c = document.createElement('canvas'), x = c.getContext('2d');
+  const f = '800 56px Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  x.font = f; const w = Math.max(x.measureText(text).width, sub ? (x.font = '700 34px Pretendard, sans-serif', x.measureText(sub).width) : 0) + 70;
+  c.width = Math.ceil(w); c.height = sub ? 150 : 96;
+  x.fillStyle = bg; const r = 40; x.beginPath(); x.roundRect(0, 0, c.width, c.height, r); x.fill();
+  x.fillStyle = fg; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = f; x.fillText(text, c.width / 2, sub ? 54 : 50);
+  if (sub) { x.font = '700 34px Pretendard, sans-serif'; x.globalAlpha = 0.85; x.fillText(sub, c.width / 2, 112); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false }));
+  const h = (sub ? 1.5 : 0.96) * size; s.scale.set((c.width / c.height) * h, h, 1);
+  return s;
+}
+
+/* ============================================================
+   땅 · 호수 · 길
+   ============================================================ */
+const ground = shadow(new THREE.Mesh(new THREE.PlaneGeometry(110, 76), M('#9bd18f')));
+ground.rotation.x = -Math.PI / 2; ground.position.set(0, 0, -8); scene.add(ground);
+const far = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), M('#86bf7b'));
+far.rotation.x = -Math.PI / 2; far.position.set(0, -0.05, -120); scene.add(far);
+const plaza = shadow(new THREE.Mesh(new THREE.CircleGeometry(13, 48), M('#ece4d2')));
+plaza.rotation.x = -Math.PI / 2; plaza.position.set(0, 0.02, -2); scene.add(plaza);
+const ringPl = new THREE.Mesh(new THREE.RingGeometry(12.6, 13, 48), M('#c9b99a'));
+ringPl.rotation.x = -Math.PI / 2; ringPl.position.set(0, 0.03, -2); scene.add(ringPl);
+const path = (x1, z1, x2, z2) => {
+  const len = Math.hypot(x2 - x1, z2 - z1), m = shadow(new THREE.Mesh(new THREE.PlaneGeometry(3.4, len), M('#e2d8c2')));
+  m.rotation.x = -Math.PI / 2; m.rotation.z = -Math.atan2(x2 - x1, z2 - z1); m.position.set((x1 + x2) / 2, 0.015, (z1 + z2) / 2); scene.add(m);
+};
+path(0, -2, 26, -18); path(0, -2, -26, -18); path(0, -2, 28, 14); path(0, -2, -28, 14); path(0, -2, 0, 27);
+
+/* 시화호 · 방조제 */
+const waterMat = new THREE.MeshStandardMaterial({ color: '#3f8fc9', roughness: 0.25, metalness: 0.1, transparent: true, opacity: 0.94 });
+const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 160, 60, 24), waterMat);
+water.rotation.x = -Math.PI / 2; water.position.set(0, -0.25, 108); scene.add(water);
+const shore = new THREE.Mesh(new THREE.PlaneGeometry(110, 3), M('#e8dcb8'));
+shore.rotation.x = -Math.PI / 2; shore.position.set(0, 0.01, 28.5); scene.add(shore);
+const dike = box(240, 0.7, 4, '#d8cfb6', 30, 0.1, 62); dike.rotation.y = -0.28;
+const dikeRoad = box(240, 0.05, 2.2, '#5f6870', 30, 0.48, 62); dikeRoad.rotation.y = -0.28;
+const dikeCars = [];
+for (let i = 0; i < 4; i++) { const car = box(1.8, 0.8, 1, i % 2 ? '#e5533d' : '#f2f2f2', 0, 0.9, 0); dikeCars.push({ m: car, t: i / 4, dir: i % 2 ? 1 : -1 }); }
+/* 송전탑 — 원본 사진의 시화호 풍경 */
+for (let i = 0; i < 6; i++) {
+  const g = new THREE.Group(), x = 60 + i * 18, z = 52 + i * 3;
+  for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const leg = box(0.15, 12, 0.15, '#c8d2da', a * 0.9, 6, b * 0.9, g); leg.rotation.z = -a * 0.07; leg.rotation.x = b * 0.07; }
+  box(5, 0.15, 0.15, '#c8d2da', 0, 10, 0, g); box(3.5, 0.15, 0.15, '#c8d2da', 0, 11.6, 0, g);
+  g.position.set(x, 0, z); scene.add(g);
+}
+
+/* 나무 */
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const treeSpots = [];
+const nearZone = (x, z) => [[0, -2, 15], [26, -18, 11], [-26, -18, 11], [30, 14, 10], [-30, 14, 10], [0, -24, 11]].some(([a, b, r]) => Math.hypot(x - a, z - b) < r);
+for (let i = 0; i < 70; i++) {
+  const x = -50 + rnd() * 100, z = -44 + rnd() * 70;
+  if (nearZone(x, z) || Math.abs(x) < 2.5 || treeSpots.some(([a, b]) => Math.hypot(a - x, b - z) < 3.4)) continue;
+  treeSpots.push([x, z]);
+  const s = 0.8 + rnd() * 0.6, g = new THREE.Group();
+  cyl(0.2 * s, 0.28 * s, 1.4 * s, '#8a6a4a', 0, 0.7 * s, 0, 8, g);
+  const leaf = shadow(new THREE.Mesh(new THREE.ConeGeometry(1.3 * s, 2.8 * s, 9), M(rnd() > 0.5 ? '#3f9a5c' : '#57ad63')));
+  leaf.position.y = 2.6 * s; g.add(leaf); g.userData.leaf = leaf;
+  g.position.set(x, 0, z); scene.add(g); solid(x, z, 0.8, 0.8);
+}
+
+/* ============================================================
+   건물
+   ============================================================ */
+function windows(parent, w, h, d, rows, cols, y0, color = '#9fd3f2') {
+  const geo = new THREE.PlaneGeometry(0.9, 0.9), mat = M(color, { emissive: '#1f4f6f', emissiveIntensity: 0.25 });
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const m = new THREE.Mesh(geo, mat); m.position.set(-w / 2 + (c + 0.5) * (w / cols), y0 + r * 1.6, d / 2 + 0.02); parent.add(m);
+  }
+}
+
+/* 재단 사옥 (4층) */
+const hq = new THREE.Group(); hq.position.set(0, 0, -24); scene.add(hq);
+box(16, 11, 10, '#f3f6f8', 0, 5.5, 0, hq); box(16.4, 0.5, 10.4, '#23579c', 0, 11.2, 0, hq);
+box(5, 11.2, 0.3, '#9fd3f2', 0, 5.6, 5.05, hq).material = M('#9fd3f2', { emissive: '#2a6b8f', emissiveIntensity: 0.25, roughness: 0.2 });
+windows(hq, 16, 11, 10, 4, 8, 3.4);
+box(4, 3, 1, '#0a9466', 0, 1.5, 5.4, hq);
+box(6.5, 0.3, 2.6, '#23579c', 0, 3.3, 6.2, hq);
+const hqSign = label('재단법인 맑고푸른곶', { bg: '#0c3360', size: 1.4 }); hqSign.position.set(0, 13.4, -19); scene.add(hqSign);
+solid(0, -24, 16.4, 10.6);
+/* 깃대 */
+cyl(0.08, 0.08, 7, '#c8d2da', 8.5, 3.5, -17.5); const flag = box(1.8, 1.1, 0.05, '#0a9466', 9.45, 6.4, -17.5);
+
+/* 측정·분석 구역 — 공장 + 굴뚝 + 측정 차량 */
+const mz = new THREE.Group(); mz.position.set(27, 0, -19); scene.add(mz);
+box(11, 5, 8, '#d9dde2', 0, 2.5, 0, mz); windows(mz, 11, 5, 8, 1, 6, 2.6, '#c8d6df');
+box(11.4, 0.4, 8.4, '#8a97a3', 0, 5.2, 0, mz);
+const stack = cyl(0.8, 1.1, 16, '#eef0f2', 6.5, 8, -2, 20, mz);
+for (let i = 0; i < 3; i++) cyl(0.82 + i * 0.05, 0.82 + i * 0.05, 0.9, '#e5533d', 6.5, 12.6 + i * 1.3, -2, 20, mz);
+const platform = cyl(1.8, 1.8, 0.25, '#7b8794', 6.5, 9.5, -2, 20, mz);
+for (let i = 0; i < 10; i++) cyl(0.12, 0.12, 9.5, '#7b8794', 6.5 + Math.cos(i) * 1.6, 4.75, -2 + Math.sin(i) * 1.6, 6, mz);
+const ladder = box(0.8, 9.5, 0.15, '#f2b632', 6.5, 4.75, -0.3, mz);
+solid(27, -19, 11.4, 8.4); solid(33.5, -21, 2.6, 2.6);
+const van = new THREE.Group(); van.position.set(19, 0, -10); van.rotation.y = 0.4; scene.add(van);
+box(3.6, 1.6, 1.9, '#ffffff', 0, 1.2, 0, van); box(1.3, 1.1, 1.9, '#2e6fb7', 1.9, 0.95, 0, van);
+box(3.6, 0.15, 1.95, '#0a9466', 0, 1.4, 0, van);
+for (const [a, b] of [[-1.2, 1], [1.4, 1], [-1.2, -1], [1.4, -1]]) { const w = cyl(0.4, 0.4, 0.3, '#2a2f35', a, 0.4, b * 0.95, 14, van); w.rotation.x = Math.PI / 2; }
+cyl(0.05, 0.05, 1.2, '#c8d2da', -1, 2.6, 0, 6, van); const vanLamp = cyl(0.16, 0.16, 0.2, '#ff6b5e', -1, 3.2, 0, 10, van);
+solid(19, -10, 3.4, 3.4);
+const mzSign = label('측정·분석', { bg: '#2e6fb7', sub: '대기측정대행', size: 1.1 }); mzSign.position.set(25, 8.6, -14); scene.add(mzSign);
+
+/* 환경에너지센터 — 활성탄 공동재생 */
+const ez = new THREE.Group(); ez.position.set(-27, 0, -20); scene.add(ez);
+box(12, 6, 8, '#e9eef0', 0, 3, 0, ez); box(5, 6.4, 8.2, '#e8a65a', 4, 3.2, 0, ez); windows(ez, 12, 6, 8, 2, 7, 2.2);
+box(12.4, 0.4, 8.4, '#0a9466', 0, 6.2, 0, ez);
+const kiln = cyl(1.8, 1.8, 7, '#b7c2cb', -7.5, 3.5, -1, 24, ez);
+const kilnGlow = cyl(1.84, 1.84, 2.2, '#ffb547', -7.5, 2.6, -1, 24, ez); kilnGlow.material = new THREE.MeshStandardMaterial({ color: '#ffb547', emissive: '#ff8a2a', emissiveIntensity: 0.3 });
+cyl(0.45, 0.6, 12, '#dde3e8', 5.4, 6, -3, 16, ez);
+solid(-27, -20, 12.4, 8.4); solid(-34.5, -21, 4, 4);
+const dropZone = new THREE.Mesh(new THREE.RingGeometry(1.6, 2.2, 32), new THREE.MeshBasicMaterial({ color: '#7ee3b4', transparent: true, opacity: 0.85 }));
+dropZone.rotation.x = -Math.PI / 2; dropZone.position.set(-22, 0.05, -12); scene.add(dropZone);
+const ezSign = label('환경에너지센터', { bg: '#0a9466', sub: '활성탄 공동재생', size: 1.1 }); ezSign.position.set(-27, 9.4, -15); scene.add(ezSign);
+
+/* 흡착탑 3곳 — 산단 사업장 */
+const TOWERS = [[38, -6], [36, 4], [-40, -4]].map(([x, z], i) => {
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  box(5, 3.2, 4, '#cfd6dc', -3.4, 1.6, 0, g);
+  const t = cyl(1, 1, 4.5, '#9aa8b4', 0, 2.25, 0, 18, g);
+  cyl(1.05, 1.05, 0.4, '#e5533d', 0, 3.6, 0, 18, g);
+  const bag = new THREE.Group(); box(0.9, 1, 0.9, '#3a4248', 0, 0.5, 0, bag); box(0.95, 0.15, 0.95, '#ffb547', 0, 1.05, 0, bag);
+  bag.position.set(1.8, 0, 1.4); g.add(bag);
+  solid(x - 3.4, z, 5, 4); solid(x, z, 2.2, 2.2);
+  const s = label(`흡착탑 ${i + 1}`, { bg: '#5b6b78', size: 0.7 }); s.position.set(x, 6, z); scene.add(s);
+  return { g, bag, tower: t, pos: new THREE.Vector3(x + 1.8, 0, z + 1.4) };
+});
+
+/* 컨설팅 사업장 */
+const cz = new THREE.Group(); cz.position.set(30, 0, 14); scene.add(cz);
+box(10, 4.5, 7, '#e3d9cc', 0, 2.25, 0, cz); box(10.4, 0.4, 7.4, '#8b7a5e', 0, 4.6, 0, cz); windows(cz, 10, 4.5, 7, 1, 5, 2.4, '#c8d6df');
+const duct = box(0.8, 0.8, 6, '#a8b3bc', -5.6, 3.4, 0, cz);
+const czTower = cyl(0.9, 0.9, 4, '#9aa8b4', -5.8, 2, 4.4, 16, cz);
+const drum = cyl(0.5, 0.5, 1, '#3d79c2', 5.8, 0.5, 3.4, 14, cz);
+const desk = box(1.6, 0.9, 0.8, '#c9a67a', 3, 0.45, 4.6, cz);
+solid(30, 14, 10.4, 7.4); solid(24.2, 18.4, 2, 2);
+const czSign = label('환경컨설팅', { bg: '#8b7a5e', sub: '사업장 진단', size: 1.1 }); czSign.position.set(30, 7.4, 17); scene.add(czSign);
+const SPOTS = [
+  { at: [24.2, 0, 16.2], q: '흡착탑 활성탄을 바꾼 지 오래됐어요. 냄새를 잘 못 잡아요.', a: ['활성탄을 적정 시기에 교체해요', '배기팬 속도만 올려요'], ok: 0, why: '활성탄은 흡착 성능이 떨어지기 전에 적정 시기에 교체해야 해요. 재단은 폐활성탄을 모아 재생해 재공급해요.' },
+  { at: [23.2, 0, 11.6], q: '덕트 이음매 틈새로 냄새가 새어 나와요.', a: ['창문을 열어 환기만 해요', '새는 곳을 막고 점검 기록을 남겨요'], ok: 1, why: '새는 곳을 고치고 점검 내용을 기록해 두면 같은 문제가 반복되지 않아요.' },
+  { at: [33, 0, 18.8], q: '방지시설 운영일지가 비어 있어요.', a: ['운영·점검 내용을 그때그때 기록해요', '측정하는 날만 몰아서 적어요'], ok: 0, why: '방지시설은 설치 이후 운영·유지관리가 중요해요. 평소 기록이 관리의 기본이에요.' },
+];
+const spotMarks = SPOTS.map((s) => { const m = label('!', { bg: '#e5533d', size: 0.9 }); m.position.set(s.at[0], 3.2, s.at[2]); scene.add(m); return m; });
+
+/* 환경교육관 */
+const edz = new THREE.Group(); edz.position.set(-30, 0, 14); scene.add(edz);
+box(11, 5, 8, '#fbf3e2', 0, 2.5, 0, edz);
+const roof = shadow(new THREE.Mesh(new THREE.ConeGeometry(8.2, 3.2, 4), M('#e5533d'))); roof.position.set(0, 6.6, 0); roof.rotation.y = Math.PI / 4; roof.scale.set(1, 1, 0.75); edz.add(roof);
+windows(edz, 11, 5, 8, 1, 5, 2.6, '#ffe6a6');
+box(2.4, 3, 0.3, '#8a6a4a', 0, 1.5, 4.1, edz);
+const board = box(4, 2.2, 0.2, '#2d5a3d', -9, 1.8, 2, scene); board.position.set(-24, 1.8, 19.6);
+solid(-30, 14, 11, 8);
+const edSign = label('환경교육관', { bg: '#e5533d', sub: '사업주 · 환경관리인 교육', size: 1.1 }); edSign.position.set(-30, 10.2, 17); scene.add(edSign);
+
+/* ============================================================
+   사람 · 마스코트
+   ============================================================ */
+function makePerson({ shirt = '#2e6fb7', pants = '#38485a', skin = '#f1c8a4', hair = '#2a221d', vest = false, helmet = false } = {}) {
+  const g = new THREE.Group();
+  const leg = (sx) => { const p = new THREE.Group(); p.position.set(sx, 0.82, 0); const m = shadow(new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.82, 0.3), M(pants))); m.position.y = -0.41; p.add(m); const sh = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.14, 0.38), M('#f4f4f4')); sh.position.set(0, -0.8, 0.04); p.add(sh); g.add(p); return p; };
+  const arm = (sx) => { const p = new THREE.Group(); p.position.set(sx, 1.5, 0); const m = shadow(new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.66, 0.22), M(vest ? '#2e6fb7' : shirt))); m.position.y = -0.33; p.add(m); const h = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), M(skin)); h.position.y = -0.7; p.add(h); g.add(p); return p; };
+  const legs = [leg(-0.16), leg(0.16)], arms = [arm(-0.46), arm(0.46)];
+  const body = shadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.42, 4, 12), M(shirt))); body.position.y = 1.2; body.scale.set(1, 1, 0.72); g.add(body);
+  if (vest) { const v = new THREE.Mesh(new THREE.CapsuleGeometry(0.355, 0.36, 4, 12), M('#d7f25a')); v.position.y = 1.22; v.scale.set(1, 1, 0.75); g.add(v); }
+  const head = shadow(new THREE.Mesh(new THREE.SphereGeometry(0.36, 18, 14), M(skin))); head.position.y = 1.92; g.add(head);
+  const hairM = new THREE.Mesh(new THREE.SphereGeometry(0.38, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.52), M(helmet ? '#ffffff' : hair)); hairM.position.y = 1.96; hairM.rotation.x = -0.15; g.add(hairM);
+  for (const sx of [-0.13, 0.13]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), M('#1d232a')); e.position.set(sx, 1.93, 0.33); g.add(e); }
+  const cheek = M('#ff9fae'); for (const sx of [-0.22, 0.22]) { const c = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), cheek); c.position.set(sx, 1.84, 0.29); c.scale.z = 0.4; g.add(c); }
+  return { g, legs, arms, phase: 0 };
+}
+function animPerson(p, speed, dt) {
+  p.phase += dt * (4 + speed * 2.2);
+  const a = Math.min(1, speed / 3) * 0.7, s = Math.sin(p.phase);
+  p.legs[0].rotation.x = s * a; p.legs[1].rotation.x = -s * a; p.arms[0].rotation.x = -s * a * 0.9; p.arms[1].rotation.x = s * a * 0.9;
+  p.g.children.forEach((c) => { if (c.isMesh && c.geometry.type === 'CapsuleGeometry') c.position.y = 1.2 + Math.abs(Math.cos(p.phase)) * a * 0.06; });
+}
+
+/* 플레이어 */
+const player = makePerson({ shirt: S.color });
+player.g.position.set(0, 0, 4); player.g.rotation.y = Math.PI; scene.add(player.g);
+const nameTag = label(S.name || '체험자', { bg: 'rgba(4,24,43,.75)', size: 0.55 }); nameTag.position.y = 2.75; player.g.add(nameTag);
+
+/* 마스코트 — 곶이 (잎사귀 친구) */
+const gotti = new THREE.Group();
+const gb = shadow(new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 16), M('#7ee3b4'))); gb.scale.set(1, 0.92, 1); gb.position.y = 0.55; gotti.add(gb);
+const gl = shadow(new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 10), M('#0a9466'))); gl.scale.set(0.45, 0.16, 1); gl.position.set(0.08, 1.12, 0); gl.rotation.set(0.3, 0.4, 0.5); gotti.add(gl);
+const gl2 = gl.clone(); gl2.scale.set(0.35, 0.13, 0.75); gl2.position.set(-0.16, 1.06, 0.02); gl2.rotation.set(0.2, -0.4, -0.6); gotti.add(gl2);
+for (const sx of [-0.16, 0.16]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), M('#14202b')); e.position.set(sx, 0.62, 0.45); gotti.add(e); }
+const gm = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.018, 6, 12, Math.PI), M('#14202b')); gm.position.set(0, 0.48, 0.47); gm.rotation.z = Math.PI; gotti.add(gm);
+gotti.position.set(-1.5, 0, 5); scene.add(gotti);
+const gottiTag = label('곶이', { bg: '#0a9466', size: 0.45 }); gottiTag.position.y = 1.65; gotti.add(gottiTag);
+
+/* 안내 직원 · 업무 담당자 */
+const NPCS = {};
+function npc(id, name, opts, x, z, ry) {
+  const p = makePerson(opts); p.g.position.set(x, 0, z); p.g.rotation.y = ry; scene.add(p.g);
+  const t = label(name, { bg: 'rgba(12,51,96,.85)', size: 0.5 }); t.position.y = 2.7; p.g.add(t);
+  const ex = label('!', { bg: '#f2b632', fg: '#3a2606', size: 0.8 }); ex.position.y = 3.45; p.g.add(ex);
+  solid(x, z, 1, 1); NPCS[id] = { p, ex, pos: new THREE.Vector3(x, 0, z) };
+}
+npc('guide', '안내 직원', { shirt: '#23579c', hair: '#3a2a20' }, 0, -14.6, 0);
+npc('measure', '측정분석팀', { shirt: '#ffffff', helmet: true, vest: true }, 21.5, -13.5, 0.4);
+npc('regen', '유지관리팀', { shirt: '#0a9466', helmet: true }, -21.5, -14.5, -0.3);
+npc('consult', '컨설턴트', { shirt: '#8b7a5e', hair: '#5a3b26' }, 26.5, 19.5, -0.5);
+npc('edu', '환경교육 강사', { shirt: '#e5533d', hair: '#1b1b1b' }, -24.5, 19.2, 0.4);
+
+/* 하늘 물방울 */
+const dropMeshes = DROPS.map((d, i) => {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12), new THREE.MeshStandardMaterial({ color: '#8fd6f4', emissive: '#3fa2e0', emissiveIntensity: 0.6, transparent: true, opacity: 0.9, roughness: 0.1 }));
+  m.scale.set(1, 1.25, 1); m.position.set(d.p[0], 1.2, d.p[1]); m.visible = !S.drops.includes(i); scene.add(m); return m;
+});
+
+/* 하늘 — 먼지 · 철새 · 무지개 */
+const dustGeo = new THREE.BufferGeometry(), dustN = mobile ? 260 : 520, dp = new Float32Array(dustN * 3);
+for (let i = 0; i < dustN; i++) { dp[i * 3] = -50 + Math.random() * 100; dp[i * 3 + 1] = 0.5 + Math.random() * 14; dp[i * 3 + 2] = -45 + Math.random() * 75; }
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dp, 3));
+const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: '#d9c7a0', size: 0.28, transparent: true, opacity: 0.7, depthWrite: false }));
+scene.add(dust);
+const birds = new THREE.Group(); scene.add(birds);
+for (let i = 0; i < 9; i++) {
+  const b = new THREE.Group(), wm = M('#f4f7fa');
+  for (const s of [-1, 1]) { const w = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 0.3), wm); w.position.x = s * 0.45; w.userData.s = s; b.add(w); }
+  b.position.set(-Math.floor(i / 2) * 1.6, 0, (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 1.2); birds.add(b);
+}
+birds.visible = false;
+const rainbow = new THREE.Group();
+['#ff6b5e', '#ffb547', '#f2d46b', '#7ee3b4', '#5aa9e6', '#7b6ff0'].forEach((c, i) => {
+  const r = new THREE.Mesh(new THREE.TorusGeometry(46 - i * 1.1, 0.55, 8, 80, Math.PI), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.55, fog: false }));
+  rainbow.add(r);
+});
+rainbow.position.set(10, -2, 88); rainbow.visible = false; scene.add(rainbow);
+
+/* 목표 표시 — 땅 위 고리 + 떠 있는 화살표 */
+const beacon = new THREE.Group();
+const bRing = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.5, 32), new THREE.MeshBasicMaterial({ color: '#f2b632', transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
+bRing.rotation.x = -Math.PI / 2; bRing.position.y = 0.06; beacon.add(bRing);
+const bArrow = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.9, 4), new THREE.MeshBasicMaterial({ color: '#f2b632' })); bArrow.rotation.x = Math.PI; bArrow.position.y = 4; beacon.add(bArrow);
+scene.add(beacon);
+const guide = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.8, 3), new THREE.MeshBasicMaterial({ color: '#f2b632', transparent: true, opacity: 0.9 }));
+guide.rotation.x = Math.PI / 2; scene.add(guide);
+
+/* 반짝 입자 (미션 완료 · 재생) */
+const bursts = [];
+function burst(pos, color = '#7ee3b4', n = 40) {
+  const geo = new THREE.BufferGeometry(), p = new Float32Array(n * 3), v = [];
+  for (let i = 0; i < n; i++) { p.set([pos.x, pos.y, pos.z], i * 3); v.push(new THREE.Vector3((Math.random() - 0.5) * 6, 3 + Math.random() * 5, (Math.random() - 0.5) * 6)); }
+  geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size: 0.35, transparent: true, depthWrite: false }));
+  scene.add(pts); bursts.push({ pts, v, life: 1.6 });
+}
+
+/* ============================================================
+   소리 (파일 없이 WebAudio)
+   ============================================================ */
+let actx = null, soundOn = true;
+function tone(freqs, dur = 0.12, type = 'sine', gap = 0.09) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new AudioContext();
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * gap;
+      o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + 0.05);
+    });
+  } catch { /* 소리 불가 */ }
+}
+const sfx = { ok: () => tone([660, 880]), bad: () => tone([300, 220], 0.18, 'triangle'), stamp: () => tone([523, 659, 784, 1046], 0.22), drop: () => tone([1046, 1318], 0.14), talk: () => tone([520], 0.06, 'triangle') };
+
+/* ============================================================
+   화면 요소 · 대화
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const ui = { dialog: $('dialog'), dname: $('dname'), dtext: $('dtext'), dchoices: $('dchoices'), dnext: $('dnext'), prompt: $('prompt'), toast: $('toast'), act: $('act'), mission: $('mission'), drops: $('drops'), card: $('card'), cardbox: $('cardbox'), gauge: $('gauge'), gbar: $('gbar'), gtext: $('gtext') };
+let busy = false; /* 대화 · 연출 중에는 움직이지 않는다 */
+
+function say(name, text) {
+  return new Promise((res) => {
+    busy = true; ui.dialog.hidden = false; ui.dname.textContent = name; ui.dtext.innerHTML = text; ui.dchoices.innerHTML = ''; ui.dnext.hidden = false; sfx.talk();
+    const done = () => { ui.dnext.onclick = null; nextKey = null; res(); };
+    ui.dnext.onclick = done; nextKey = done; ui.dnext.focus({ preventScroll: true });
+  });
+}
+function ask(name, text, choices, big = false) {
+  return new Promise((res) => {
+    busy = true; ui.dialog.hidden = false; ui.dname.textContent = name; ui.dtext.innerHTML = text; ui.dnext.hidden = true; ui.dchoices.innerHTML = ''; sfx.talk();
+    choices.forEach((c, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = c; if (big) b.className = 'big'; b.onclick = () => { nextKey = null; res(i); }; ui.dchoices.appendChild(b); });
+    nextKey = null; ui.dchoices.firstChild.focus({ preventScroll: true });
+  });
+}
+function endTalk() { ui.dialog.hidden = true; busy = false; refreshHud(); }
+let toastT = 0;
+function toast(t, ms = 2600) { ui.toast.innerHTML = t; ui.toast.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => ui.toast.classList.remove('show'), ms); }
+function hold(text, sec) {
+  return new Promise((res) => {
+    busy = true; ui.gauge.hidden = false; ui.gtext.textContent = text; const t0 = performance.now();
+    const step = (t) => { const p = Math.min(1, (t - t0) / (sec * 1000)); ui.gbar.style.transform = `scaleX(${p})`; if (p < 1) requestAnimationFrame(step); else { ui.gauge.hidden = true; res(); } };
+    requestAnimationFrame(step);
+  });
+}
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ============================================================
+   미션 진행
+   ============================================================ */
+const stepOf = (id) => S.step[id] || 0;
+const setStep = (id, n) => { S.step[id] = n; save(); refreshHud(); };
+const doneCount = () => ORDER.filter((k) => S.stamps[k]).length;
+
+function stampOn(id) {
+  if (S.stamps[id]) return;
+  S.stamps[id] = Date.now(); S.step[id] = 99; save(); sfx.stamp();
+  burst(player.g.position.clone().add(new THREE.Vector3(0, 2, 0)), '#7ee3b4', 60);
+  const n = doneCount();
+  toast(`${ZONES[id].icon} <b>${ZONES[id].title}</b> 체험 완료!<br>시화호 하늘이 ${n * 25}% 맑아졌어요${n === 4 ? ' — 무지개가 떴어요 🌈' : ''}`, 3600);
+  refreshHud();
+}
+
+/* 지금 해야 할 일 → 목표 위치 · 안내 문구 */
+function currentGoal() {
+  for (const id of ORDER) {
+    if (S.stamps[id]) continue;
+    const s = stepOf(id);
+    if (id === 'measure' && s === 1) return { id, at: new THREE.Vector3(33.5, 0, -19), text: '굴뚝 아래 사다리로 가서 <b>시료를 채취</b>해요' };
+    if (id === 'measure' && s === 2) return { id, at: van.position.clone(), text: '시료를 <b>측정 차량</b>에 실어요' };
+    if (id === 'measure' && s === 3) return { id, at: NPCS.measure.pos, text: '<b>측정분석팀</b>에게 분석 결과를 들어요' };
+    if (id === 'regen' && s === 1) { const left = TOWERS.findIndex((t, i) => !(S.bags || []).includes(i)); if (left >= 0) return { id, at: TOWERS[left].pos, text: `흡착탑의 <b>폐활성탄</b>을 모아요 (${(S.bags || []).length}/3)` }; return { id, at: dropZone.position.clone(), text: '환경에너지센터 앞 <b>초록 고리</b>에 폐활성탄을 내려놔요' }; }
+    if (id === 'consult' && s === 1) { const left = SPOTS.findIndex((_, i) => !(S.spots || []).includes(i)); if (left >= 0) return { id, at: new THREE.Vector3(...SPOTS[left].at), text: `사업장의 <b>빨간 !</b> 표시를 진단해요 (${(S.spots || []).length}/3)` }; return { id, at: NPCS.consult.pos, text: '<b>컨설턴트</b>에게 진단 결과를 알려요' }; }
+  }
+  if (!S.met) return { id: 'guide', at: NPCS.guide.pos, text: '재단 사옥 앞 <b>안내 직원</b>에게 말을 걸어 보세요' };
+  const next = ORDER.find((k) => !S.stamps[k]);
+  if (next) return { id: next, at: NPCS[next].pos, text: `<b>${ZONES[next].name}</b> 담당자를 찾아가요 (노란 화살표)` };
+  return { id: 'guide', at: NPCS.guide.pos, text: '모든 체험 완료! <b>안내 직원</b>에게 체험 기념 카드를 받아요' };
+}
+
+/* 상호작용 목록 */
+function interactables() {
+  const list = [];
+  for (const [id, n] of Object.entries(NPCS)) list.push({ pos: n.pos, r: 2.6, label: '말 걸기', run: () => talk(id) });
+  if (stepOf('measure') === 1) list.push({ pos: new THREE.Vector3(33.5, 0, -19), r: 3, label: '시료 채취', run: sampleStack });
+  if (stepOf('measure') === 2) list.push({ pos: van.position, r: 3.2, label: '차량에 싣기', run: loadVan });
+  if (stepOf('regen') === 1) {
+    TOWERS.forEach((t, i) => { if (!(S.bags || []).includes(i)) list.push({ pos: t.pos, r: 2.4, label: '폐활성탄 담기', run: () => pickBag(i) }); });
+    if ((S.bags || []).length === 3) list.push({ pos: dropZone.position, r: 2.6, label: '내려놓기', run: dropBags });
+  }
+  if (stepOf('consult') === 1) SPOTS.forEach((s, i) => { if (!(S.spots || []).includes(i)) list.push({ pos: new THREE.Vector3(...s.at), r: 2.2, label: '진단하기', run: () => diagnose(i) }); });
+  return list;
+}
+
+/* ---------- 대화 내용 ---------- */
+async function talk(id) {
+  const me = S.name || '체험자';
+  if (id === 'guide') {
+    if (doneCount() === 4) {
+      await say('안내 직원', `${me} 님, 네 가지 업무를 모두 체험하셨네요! 덕분에 시화호 하늘이 아주 맑아졌어요. 🌈`);
+      await say('안내 직원', '측정에서 재생, 컨설팅과 교육까지 — 재단법인 맑고푸른곶은 시화호 권역의 지속가능한 미래를 지역과 함께 만들어갑니다.');
+      endTalk(); showCert(); return;
+    }
+    await say('안내 직원', `어서 오세요, ${me} 님! 여기는 <b>재단법인 맑고푸른곶</b>이에요.`);
+    await say('안내 직원', '저희 재단은 「시화호 환경개선 특별대책 로드맵 사업」을 기반으로 설립된 비영리법인이에요. 시화지구를 중심으로 경기권역의 대기·수질 환경개선 사업을 추진해요.');
+    const c = await ask('안내 직원', '마을 곳곳에서 재단의 네 가지 업무를 체험할 수 있어요. 업무를 하나 마칠 때마다 뿌연 하늘이 25%씩 맑아져요!', ['어디부터 갈까요?', '재단 소개 더 보기']);
+    if (c === 1) { endTalk(); showAbout(); S.met = true; save(); return; }
+    await say('안내 직원', '🔬 동쪽 공장 — <b>측정·분석</b>\n♻️ 서쪽 — <b>환경에너지센터</b>(활성탄 재생)\n🩺 동남쪽 — <b>환경컨설팅</b>\n📘 서남쪽 — <b>환경교육관</b>\n노란 화살표가 다음 갈 곳을 알려 줘요. 곶이도 따라다닐 거예요!');
+    S.met = true; save(); endTalk(); return;
+  }
+  if (S.stamps[id]) { await say(NPCS_NAME[id], DONE_LINE[id]); endTalk(); return; }
+  if (id === 'measure') return measureTalk();
+  if (id === 'regen') return regenTalk();
+  if (id === 'consult') return consultTalk();
+  if (id === 'edu') return eduQuiz();
+}
+const NPCS_NAME = { measure: '측정분석팀', regen: '유지관리팀', consult: '컨설턴트', edu: '환경교육 강사' };
+const DONE_LINE = {
+  measure: '덕분에 배출허용기준을 지키고 있는지 잘 확인했어요. 대기오염물질 64종, 특정대기유해물질 35종 — 전 항목을 측정·분석해요!',
+  regen: '모은 폐활성탄은 저온 공정으로 재생해서 다시 사업장에 공급돼요. 열에너지도 함께 쓰여요.',
+  consult: '현장 진단 → 저감방안 검토 → 개선방안 제시 → 기술지원, 이렇게 사업장을 도와요.',
+  edu: '사업주와 환경관리인이 스스로 관리하는 힘을 기르는 게 환경교육의 목표예요.',
+};
+
+async function measureTalk() {
+  const s = stepOf('measure');
+  if (s === 0) {
+    await say('측정분석팀', '안녕하세요! 저희는 대기배출시설에서 나오는 오염물질을 <b>자가측정</b>해서 배출허용기준을 지키는지 확인해요.');
+    await say('측정분석팀', '오늘은 굴뚝 시료를 함께 채취해 볼까요? 공장 뒤 <b>굴뚝 사다리</b> 앞으로 가 주세요.');
+    setStep('measure', 1); endTalk(); return;
+  }
+  if (s === 3) {
+    let a = await ask('측정분석팀', '분석이 끝났어요! 문제 하나 — 재단이 측정·분석하는 <b>대기오염물질</b>은 전 항목 몇 종일까요?', ['35종', '64종', '100종']);
+    if (a === 1) { sfx.ok(); await say('측정분석팀', '정답! 먼지·중금속 같은 입자상물질, 질소산화물, 황산화물 등 <b>64종</b> 전 항목이에요.'); }
+    else { sfx.bad(); await say('측정분석팀', '아쉬워요. 정답은 <b>64종</b>이에요. 35종은 특정대기유해물질 항목 수예요.'); }
+    a = await ask('측정분석팀', '정확한 측정·분석을 위해 재단이 갖춘 것은?', ['극미량 분석 시스템', '눈으로 보고 짐작하기']);
+    if (a === 0) { sfx.ok(); await say('측정분석팀', '맞아요! 유도결합 플라즈마 분광기(ICP) 같은 장비로 극미량까지 분석해요.'); }
+    else { sfx.bad(); await say('측정분석팀', '정답은 <b>극미량 분석 시스템</b>! ICP 같은 최신 장비로 정확하게 분석해요.'); }
+    endTalk(); stampOn('measure'); return;
+  }
+  await say('측정분석팀', s === 1 ? '굴뚝 사다리 앞(노란 고리)에서 시료를 채취해 주세요.' : '채취한 시료를 측정 차량에 실어 주세요.'); endTalk();
+}
+async function sampleStack() {
+  await say('측정분석팀', '굴뚝 시료채취장치를 연결할게요. 먼지를 정확히 재려면 굴뚝 속 배출가스와 <b>같은 속도로</b> 빨아들여야 해요. 이걸 <b>등속흡인</b>이라고 해요.');
+  const acc = await mgIsokinetic();
+  burst(new THREE.Vector3(33.5, 10, -21), '#e6f7ff', 30);
+  await say('측정분석팀', `시료 채취 완료! 등속 유지율 ${acc}%. ${acc >= 60 ? '아주 안정적이에요 👍' : '속도가 맞지 않으면 먼지 농도가 실제와 달라져요. 그래서 측정에는 숙련이 필요해요.'}`);
+  setStep('measure', 2); endTalk(); toast('이제 시료를 <b>측정 차량</b>으로 옮겨요');
+}
+async function loadVan() {
+  ui.dialog.hidden = true;
+  await hold('🚐 시료를 실험실로 보내는 중…', 1.6);
+  sfx.ok(); setStep('measure', 3); busy = false; toast('시료가 실험실에 도착했어요. <b>측정분석팀</b>에게 결과를 들어요');
+}
+
+async function regenTalk() {
+  const s = stepOf('regen');
+  if (s === 0) {
+    await say('유지관리팀', '반월·시화산단 사업장 대부분은 <b>활성탄 흡착탑</b>으로 냄새와 VOCs를 잡아요. 그런데 활성탄은 쓰다 보면 성능이 떨어져요.');
+    await say('유지관리팀', '재단이 거점이 되어 <b>폐활성탄을 모아</b> 환경에너지센터에서 <b>저온으로 재생</b>해요. 흡착탑 세 곳을 돌며 폐활성탄을 모아 주세요!');
+    S.bags = []; setStep('regen', 1); endTalk(); return;
+  }
+  await say('유지관리팀', (S.bags || []).length < 3 ? `흡착탑 세 곳의 폐활성탄을 모아 주세요. 지금 ${(S.bags || []).length}개!` : '센터 앞 초록 고리에 내려놓아 주세요!'); endTalk();
+}
+async function pickBag(i) {
+  S.bags = [...new Set([...(S.bags || []), i])]; save();
+  TOWERS[i].bag.visible = false; sfx.ok(); burst(TOWERS[i].pos.clone().setY(1), '#a9c3f0', 24);
+  toast(S.bags.length < 3 ? `폐활성탄 ${S.bags.length}/3 — 다음 흡착탑으로!` : '다 모았어요! <b>환경에너지센터</b>로 가요');
+  refreshHud();
+}
+async function dropBags() {
+  await say('유지관리팀', '수고했어요! 재생로에 넣기 전에 <b>선별</b>부터 해요. 이물질이 섞이면 재생 품질이 떨어지거든요.');
+  const right = await mgSort();
+  await say('유지관리팀', `선별 결과 ${right} / 8 정확! ${right >= 7 ? '완벽해요.' : '이물질 선별은 꼼꼼할수록 좋아요.'} 이제 저온 재생을 시작할게요.`);
+  ui.dialog.hidden = true; busy = true;
+  regenFx = 3.2;
+  await hold('♻️ 저온 재생 중… 폐활성탄 → 재생활성탄', 3);
+  burst(new THREE.Vector3(-34.5, 6, -21), '#7ee3b4', 70);
+  await say('유지관리팀', '재생 완료! 재생활성탄은 사업장에 저렴하게 다시 공급되고, 재생할 때 나온 <b>열에너지</b>는 집단에너지공급시설로 보내요.');
+  await say('유지관리팀', '그 덕분에 산단의 악취·미세먼지·VOCs가 줄고, 연 3만 Gcal 신재생에너지 생산을 기대해요.');
+  TOWERS.forEach((t) => { t.bag.visible = true; t.bag.children[0].material = M('#7ee3b4'); });
+  endTalk(); stampOn('regen');
+}
+
+async function consultTalk() {
+  const s = stepOf('consult');
+  if (s === 0) {
+    await say('컨설턴트', '사업장마다 공정과 시설이 달라요. 환경관리 문제를 미리 찾아 <b>맞춤형 개선방안</b>을 드리는 게 저희 일이에요.');
+    await say('컨설턴트', '먼저 현장 진단! 휴대용 측정기로 <b>덕트에서 냄새가 새는 곳</b>을 찾아볼까요?');
+    await mgOdor();
+    await say('컨설턴트', '찾은 위치를 바탕으로 문제를 좁혔어요. 이 사업장에 <b>빨간 ! 세 곳</b>이 있어요. 하나씩 진단해 주세요!');
+    S.spots = []; setStep('consult', 1); endTalk(); return;
+  }
+  if ((S.spots || []).length < 3) { await say('컨설턴트', `빨간 ! 표시를 진단해 주세요. (${(S.spots || []).length}/3)`); endTalk(); return; }
+  await say('컨설턴트', '훌륭해요! 환경관리 현황 진단 → 오염물질 저감방안 검토 → 맞춤형 개선방안 제시 → 현장중심 기술지원. 이게 재단의 컨설팅이에요.');
+  endTalk(); stampOn('consult');
+}
+async function diagnose(i) {
+  const s = SPOTS[i];
+  const a = await ask('진단', `🩺 ${s.q}\n어떻게 할까요?`, s.a);
+  if (a === s.ok) { sfx.ok(); await say('진단', `좋은 판단이에요! ${s.why}`); }
+  else { sfx.bad(); await say('진단', `음… 그건 임시방편이에요. ${s.why}`); }
+  S.spots = [...new Set([...(S.spots || []), i])]; save(); spotMarks[i].visible = false;
+  endTalk(); if (S.spots.length === 3) toast('진단 끝! <b>컨설턴트</b>에게 알려 주세요');
+}
+
+const OX = [
+  { q: '방지시설은 설치만 하면 따로 점검하지 않아도 된다.', a: 1, why: '설치 이후 운영·유지관리가 미흡하면 개선효과가 오래가지 못해요. 꾸준한 점검이 필요해요.' },
+  { q: '다 쓴 폐활성탄도 저온 공정으로 재생해 다시 쓸 수 있다.', a: 0, why: '맞아요! 환경에너지센터에서 저온으로 재생해 사업장에 다시 공급해요.' },
+  { q: '폐세정수·폐활성탄 같은 오염유발물질 관리도 환경교육에서 배운다.', a: 0, why: '맞아요! 환경관리 기본교육부터 오염유발물질 관리까지 배워요.' },
+  { q: '환경사고·민원 사례는 미리 배워도 도움이 되지 않는다.', a: 1, why: '현장 사례를 미리 배워 두면 사고·민원에 빨리 대응할 수 있어요.' },
+  { q: '사업장 자율환경관리란, 재단이 모든 사업장을 대신 관리하는 것이다.', a: 1, why: '자율환경관리는 사업주와 환경관리인이 스스로 관리하는 거예요. 재단은 그 역량을 키우도록 도와요.' },
+];
+async function eduQuiz() {
+  await say('환경교육 강사', '환경교육관에 오신 걸 환영해요! 사업주와 환경관리인이 환경관리를 잘할 수 있도록 교육해요.');
+  await say('환경교육 강사', '오늘은 <b>OX 퀴즈 다섯 문제</b>로 함께 배워 볼까요?');
+  let score = 0;
+  for (let i = 0; i < OX.length; i++) {
+    const a = await ask('환경교육 강사', `Q${i + 1}. ${OX[i].q}`, ['⭕', '❌'], true);
+    if (a === OX[i].a) { score++; sfx.ok(); await say('환경교육 강사', `⭕ 정답! ${OX[i].why}`); }
+    else { sfx.bad(); await say('환경교육 강사', `아쉬워요. 정답은 ${OX[i].a ? '❌' : '⭕'}. ${OX[i].why}`); }
+  }
+  await say('환경교육 강사', `${score} / 5 문제를 맞혔어요! ${score >= 4 ? '환경관리 박사님이시네요 🎓' : '오늘 배운 내용, 꼭 기억해 주세요!'}`);
+  endTalk(); stampOn('edu');
+}
+
+/* 마스코트와 대화 */
+const TIPS = [
+  '시화호는 우리나라 산업화와 환경 회복의 과정을 함께 담고 있는 곳이래!',
+  '하늘 물방울을 모으면 재단 이야기를 들을 수 있어. 모두 8개!',
+  '노란 화살표를 따라가면 다음 갈 곳이 보여.',
+  '재단의 핵심가치는 공정 · 상생 · 사회적 책임 · 연대야.',
+];
+let tipI = 0;
+async function talkGotti() { await say('곶이', `🌱 ${TIPS[tipI++ % TIPS.length]}`); endTalk(); }
+
+/* ============================================================
+   업무 체험 미니게임 — 등속흡인 · 활성탄 선별 · 냄새 새는 곳 찾기
+   ============================================================ */
+const mg = { box: $('mg'), title: $('mgtitle'), sub: $('mgsub'), stage: $('mgstage'), btns: $('mgbtns'), key: null };
+function mgOpen(title, sub) { busy = true; ui.dialog.hidden = true; mg.title.textContent = title; mg.sub.innerHTML = sub; mg.stage.innerHTML = ''; mg.btns.innerHTML = ''; mg.box.hidden = false; }
+function mgClose() { mg.box.hidden = true; mg.key = null; }
+function mgButton(html, cls = '') { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = html; if (cls) b.className = cls; mg.btns.appendChild(b); return b; }
+
+/* 1) 측정·분석 — 등속흡인: 배출가스 유속(초록 구간)에 흡인 속도(주황 바늘)를 맞춘다 */
+function mgIsokinetic() {
+  return new Promise((res) => {
+    mgOpen('굴뚝 시료 채취 — 등속흡인', '굴뚝 속 배출가스 속도(<b style="color:#0a9466">초록 구간</b>)는 계속 바뀌어요. 버튼을 <b>누르고 있으면</b> 흡인 속도(<b style="color:#d98a00">주황 바늘</b>)가 올라가고, 떼면 내려가요. 바늘을 초록 구간 안에 두면 시료가 모여요.');
+    mg.stage.innerHTML = '<div class="mgk"><span>배출가스 유속 ↔ 흡인 속도</span><span id="mgpct">시료 0%</span></div><div class="trk"><div class="zone" id="mgzone"></div><div class="ndl" id="mgndl"></div></div><div class="trkl"><span>느림</span><span>빠름</span></div><div class="pg"><i id="mgpg"></i></div>';
+    const zone = $('mgzone'), ndl = $('mgndl'), pg = $('mgpg'), pct = $('mgpct');
+    const b = mgButton('흡인 펌프 <kbd>Space 누르기</kbd>');
+    let on = false, v = 0.2, prog = 0, t = 0, inside = 0, total = 0, last = performance.now(), done = false;
+    const set = (x) => { on = x; b.classList.toggle('on', x); };
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); b.setPointerCapture(e.pointerId); set(true); });
+    b.addEventListener('pointerup', () => set(false)); b.addEventListener('pointercancel', () => set(false));
+    mg.key = (code, down) => { if (code === 'Space' || code === 'KeyE' || code === 'Enter') set(down); };
+    const step = (now) => {
+      if (done) return;
+      const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt; total += dt;
+      const c = 0.5 + 0.26 * Math.sin(t * 0.9) + 0.08 * Math.sin(t * 2.3);
+      v = Math.max(0, Math.min(1, v + (on ? 0.6 : -0.5) * dt));
+      const hit = Math.abs(v - c) < 0.11;
+      if (hit) { prog += dt / 5; inside += dt; }
+      zone.style.left = c * 100 + '%'; zone.classList.toggle('hit', hit); ndl.style.left = v * 100 + '%';
+      pg.style.transform = `scaleX(${Math.min(1, prog)})`; pct.textContent = `시료 ${Math.min(100, Math.round(prog * 100))}%`;
+      if (prog >= 1) { done = true; sfx.ok(); setTimeout(() => { mgClose(); res(Math.round((inside / total) * 100)); }, 350); return; }
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+/* 2) 활성탄 재생 — 거점 수집 후 선별: 폐활성탄은 재생로로, 이물질은 골라낸다 */
+const SORT_ITEMS = [
+  { e: '⚫', n: '폐활성탄', ok: true }, { e: '🥫', n: '금속 캔', ok: false }, { e: '⚫', n: '폐활성탄', ok: true },
+  { e: '🛍️', n: '비닐 봉투', ok: false }, { e: '⚫', n: '폐활성탄', ok: true }, { e: '🪨', n: '돌멩이', ok: false },
+  { e: '⚫', n: '폐활성탄', ok: true }, { e: '⚫', n: '폐활성탄', ok: true },
+];
+function mgSort() {
+  return new Promise((res) => {
+    mgOpen('폐활성탄 선별 — 재생 전처리', '모아 온 자루에 이물질이 섞여 있어요. <b>폐활성탄</b>은 재생로에 넣고, 캔·비닐·돌 같은 <b>이물질</b>은 골라내 주세요.');
+    mg.stage.innerHTML = '<div class="mgk"><span>재생로 ◀</span><span id="mgcnt">0 / 8</span></div><div class="belt"></div><div class="item" id="mgitem"></div><div class="fb" id="mgfb"></div>';
+    const item = $('mgitem'), fb = $('mgfb'), cnt = $('mgcnt');
+    const items = [...SORT_ITEMS].sort(() => Math.random() - 0.5);
+    let i = 0, right = 0, lock = false;
+    const show = () => { const it = items[i]; item.className = 'item new'; item.innerHTML = `${it.e}<small>${it.n}</small>`; void item.offsetWidth; item.className = 'item'; cnt.textContent = `${i} / ${items.length}`; lock = false; };
+    const pick = (toKiln) => {
+      if (lock) return; lock = true; const it = items[i], good = toKiln === it.ok;
+      if (good) { right++; sfx.ok(); } else sfx.bad();
+      fb.className = 'fb' + (good ? '' : ' bad');
+      fb.textContent = good ? (it.ok ? '좋아요! 재생로로 투입' : '좋아요! 이물질 제거') : (it.ok ? '앗, 폐활성탄은 재생할 수 있어요' : '앗, 이물질이 들어가면 재생로가 고장 나요');
+      item.className = 'item ' + (toKiln ? 'in' : 'out');
+      setTimeout(() => { i++; if (i >= items.length) { mgClose(); res(right); } else show(); }, 520);
+    };
+    const bIn = mgButton('◀ 재생로 투입 <kbd>←</kbd>'), bOut = mgButton('이물질 제거 ✋ <kbd>→</kbd>', 'alt');
+    bIn.onclick = () => pick(true); bOut.onclick = () => pick(false);
+    mg.key = (code, down) => { if (!down) return; if (code === 'ArrowLeft' || code === 'KeyA') pick(true); if (code === 'ArrowRight' || code === 'KeyD') pick(false); };
+    show();
+  });
+}
+
+/* 3) 환경컨설팅 — 휴대용 측정기로 덕트에서 냄새가 새는 곳 찾기 */
+const LEAKS = [[14, 36], [32, 36], [52, 36], [72, 36], [88, 52], [88, 74], [24, 70], [46, 70], [64, 70]];
+function mgOdor() {
+  return new Promise((res) => {
+    mgOpen('현장 진단 — 냄새 새는 곳 찾기', '덕트 이음매 여기저기서 냄새(<b>뿌연 연기</b>)가 새어 나와요. 사라지기 전에 <b>눌러서</b> 위치를 기록해 주세요. 다섯 곳을 찾으면 끝!');
+    mg.stage.innerHTML = '<svg class="pipe" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M4 36 H88 V74 H14" fill="none" stroke="#8aa0b4" stroke-width="7"/><path d="M4 36 H88 V74 H14" fill="none" stroke="#b9c8d6" stroke-width="2"/>' + LEAKS.map(([x, y]) => `<rect x="${x - 1.6}" y="${y - 5}" width="3.2" height="10" fill="#5b6b78"/>`).join('') + '</svg><div class="mgk"><span>🩺 휴대용 측정기</span><span id="mgcnt">찾은 곳 0 / 5</span></div>';
+    const cnt = $('mgcnt'); let found = 0, done = false, timer = 0;
+    const spawn = () => {
+      if (done) return;
+      mg.stage.querySelectorAll('.puff:not(.got)').forEach((p) => p.remove());
+      const [x, y] = LEAKS[Math.floor(Math.random() * LEAKS.length)];
+      const p = document.createElement('button'); p.type = 'button'; p.className = 'puff'; p.setAttribute('aria-label', '냄새 나는 곳 기록'); p.style.left = x + '%'; p.style.top = y + '%';
+      p.onclick = () => {
+        if (p.classList.contains('got')) return; p.classList.add('got'); p.textContent = '✔'; found++; sfx.ok(); cnt.textContent = `찾은 곳 ${found} / 5`;
+        setTimeout(() => p.remove(), 500); clearTimeout(timer);
+        if (found >= 5) { done = true; setTimeout(() => { mgClose(); res(found); }, 500); } else timer = setTimeout(spawn, 450);
+      };
+      mg.stage.appendChild(p); p.focus({ preventScroll: true });
+      timer = setTimeout(spawn, 1900);
+    };
+    mg.key = (code, down) => { if (down && (code === 'Space' || code === 'KeyE' || code === 'Enter')) mg.stage.querySelector('.puff:not(.got)')?.click(); };
+    mgButton('측정기 대기 중… 연기를 눌러요').disabled = true;
+    timer = setTimeout(spawn, 500);
+  });
+}
+
+/* ---------- 재단 소개 · 체험 기념 카드 ---------- */
+function openCard(html) { ui.cardbox.innerHTML = html; ui.card.hidden = false; busy = true; ui.cardbox.querySelector('[data-close]')?.addEventListener('click', closeCard); }
+function closeCard() { ui.card.hidden = true; busy = false; }
+ui.card.addEventListener('click', (e) => { if (e.target === ui.card) closeCard(); });
+function showAbout() {
+  openCard(`<h2>재단법인 맑고푸른곶</h2>
+  <p>시화지구 개발로 생긴 환경문제를 해결하기 위해 마련된 「시화호 환경개선 특별대책 로드맵 사업」 예산을 바탕으로 설립된 비영리법인입니다.</p>
+  <h3>하는 일</h3><ul><li>🔬 대기 측정·분석 — 대기오염물질 64종, 특정대기유해물질 35종</li><li>♻️ 활성탄 공동재생 · 거점 수집운반</li><li>🩺 사업장 맞춤형 환경컨설팅</li><li>📘 사업주 · 환경관리인 환경교육</li></ul>
+  <h3>미션 · 비전</h3><p>지역공동체와 함께 뿌리내리다 · 환경혁신을 이끄는 나침반</p>
+  <h3>찾아오시는 길</h3><p>경기 안산시 단원구 시화호수로 1047-9 · 031-8042-3830</p>
+  <div class="cardbtns"><a href="../about.html">홈페이지에서 보기</a><button type="button" class="line" data-close>닫기</button></div>`);
+}
+function showHelp() {
+  openCard(`<h2>도움말</h2>
+  <h3>조작</h3><ul><li>PC: W·A·S·D 또는 방향키로 이동, Shift 달리기, E·Space로 말 걸기·행동</li><li>휴대폰: 왼쪽 원을 밀어 이동, 오른쪽 버튼으로 말 걸기·행동</li></ul>
+  <h3>목표</h3><ul><li>네 가지 업무를 체험하고 스탬프 4개를 모아요. 하나마다 하늘이 25%씩 맑아져요.</li><li>하늘 물방울 8개를 모으면 재단 이야기를 모두 들을 수 있어요.</li><li>곶이(초록 친구)에게 말을 걸면 팁을 알려 줘요.</li></ul>
+  <p style="font-size:12.5px;color:#66737e">업무 내용은 재단 홈페이지의 공개 정보를 바탕으로 만들었고, 컨설팅 진단 상황 등은 체험용 예시예요. 진행 기록은 이 브라우저에만 저장돼요.</p>
+  <div class="cardbtns"><button type="button" data-close>닫기</button></div>`);
+}
+function certImage() {
+  const c = document.createElement('canvas'); c.width = 1080; c.height = 1350; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 1080, 1350); g.addColorStop(0, '#0c3360'); g.addColorStop(0.6, '#23579c'); g.addColorStop(1, '#0b7652');
+  x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
+  x.fillStyle = '#fff'; x.beginPath(); x.roundRect(70, 70, 940, 1210, 48); x.fill();
+  x.textAlign = 'center'; x.fillStyle = '#0a9466'; x.font = '800 40px Pretendard, sans-serif'; x.fillText('재단법인 맑고푸른곶', 540, 190);
+  x.fillStyle = '#14202b'; x.font = '800 84px Pretendard, sans-serif'; x.fillText('시화호 체험관', 540, 300);
+  x.font = '700 44px Pretendard, sans-serif'; x.fillStyle = '#23579c'; x.fillText('체험 기념 카드', 540, 372);
+  x.font = '800 72px Pretendard, sans-serif'; x.fillStyle = '#14202b'; x.fillText(`${S.name || '체험자'} 님`, 540, 520);
+  x.font = '600 36px Pretendard, sans-serif'; x.fillStyle = '#4a5864';
+  x.fillText('측정·분석 · 활성탄 재생 · 환경컨설팅 · 환경교육', 540, 600);
+  x.fillText('네 가지 업무를 모두 체험했어요', 540, 652);
+  ORDER.forEach((k, i) => {
+    const cx = 220 + i * 213, cy = 830;
+    x.fillStyle = '#0a9466'; x.beginPath(); x.arc(cx, cy, 82, 0, Math.PI * 2); x.fill();
+    x.font = '64px sans-serif'; x.fillStyle = '#fff'; x.fillText(ZONES[k].icon, cx, cy + 24);
+    x.font = '700 28px Pretendard, sans-serif'; x.fillStyle = '#14202b'; x.fillText(ZONES[k].name, cx, cy + 140);
+  });
+  x.font = '600 32px Pretendard, sans-serif'; x.fillStyle = '#66737e';
+  x.fillText(`하늘 물방울 ${S.drops.length} / 8  ·  ${new Date().toLocaleDateString('ko-KR')}`, 540, 1080);
+  x.font = '600 26px Pretendard, sans-serif'; x.fillText('체험용 기념 카드입니다 · 공식 증명서가 아닙니다', 540, 1200);
+  return c.toDataURL('image/png');
+}
+function showCert() {
+  const url = certImage();
+  openCard(`<h2>🎉 체험 완료!</h2><p>네 가지 업무를 모두 체험해 시화호 하늘을 맑게 만들었어요.</p><img src="${url}" alt="시화호 체험관 체험 기념 카드">
+  <div class="cardbtns"><a href="${url}" download="맑고푸른곶-체험카드.png">카드 저장</a><button type="button" class="line" data-close>닫기</button></div>`);
+}
+
+/* ---------- HUD ---------- */
+function refreshHud() {
+  const st = $('stamps');
+  st.querySelectorAll('.stamp').forEach((e) => e.remove());
+  ORDER.forEach((k) => { const e = document.createElement('span'); e.className = 'stamp' + (S.stamps[k] ? ' on' : ''); e.title = ZONES[k].title; e.textContent = S.stamps[k] ? ZONES[k].icon : '·'; st.appendChild(e); });
+  const g = currentGoal(); ui.mission.innerHTML = '🎯 ' + g.text;
+  ui.drops.textContent = `💧 하늘 물방울 ${S.drops.length}/8 · 하늘 ${doneCount() * 25}% 맑음`;
+}
+
+/* ============================================================
+   입력
+   ============================================================ */
+const keys = {};
+let nextKey = null;
+addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (!mg.box.hidden) { if (mg.key) { e.preventDefault(); if (!e.repeat) mg.key(e.code, true); } return; }
+  keys[e.code] = true;
+  if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    if (!ui.card.hidden) { closeCard(); return; }
+    if (nextKey) { nextKey(); return; }
+    if (!busy) action();
+  }
+  if (e.code === 'Escape' && !ui.card.hidden) closeCard();
+});
+addEventListener('keyup', (e) => { keys[e.code] = false; if (!mg.box.hidden && mg.key) mg.key(e.code, false); });
+
+/* 조이스틱 */
+const joy = $('joy'), knob = joy.querySelector('i');
+const stick = { x: 0, y: 0, id: null };
+joy.addEventListener('pointerdown', (e) => { stick.id = e.pointerId; joy.setPointerCapture(e.pointerId); moveStick(e); });
+joy.addEventListener('pointermove', (e) => { if (e.pointerId === stick.id) moveStick(e); });
+const endStick = () => { stick.id = null; stick.x = stick.y = 0; knob.style.transform = ''; };
+joy.addEventListener('pointerup', endStick); joy.addEventListener('pointercancel', endStick);
+function moveStick(e) {
+  const r = joy.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let dx = (e.clientX - cx) / (r.width / 2), dy = (e.clientY - cy) / (r.height / 2); const l = Math.hypot(dx, dy); if (l > 1) { dx /= l; dy /= l; }
+  stick.x = dx; stick.y = dy; knob.style.transform = `translate(${dx * 34}px, ${dy * 34}px)`;
+}
+ui.act.addEventListener('click', () => { if (nextKey) nextKey(); else if (!busy) action(); });
+
+let near = null, nearGotti = false;
+function action() {
+  if (near) near.run();
+  else if (nearGotti) talkGotti();
+}
+
+/* ============================================================
+   루프
+   ============================================================ */
+const clock = new THREE.Clock();
+const vel = new THREE.Vector3();
+const camTarget = new THREE.Vector3();
+let skyT = doneCount() / 4, regenFx = 0, elapsed = 0;
+camera.position.set(0, 13, 18);
+
+function collide(p) {
+  for (const c of colliders) {
+    const cx = Math.max(c.x1, Math.min(p.x, c.x2)), cz = Math.max(c.z1, Math.min(p.z, c.z2));
+    const dx = p.x - cx, dz = p.z - cz, d = Math.hypot(dx, dz), r = 0.5;
+    if (d < r) {
+      if (d > 0.0001) { p.x = cx + (dx / d) * r; p.z = cz + (dz / d) * r; }
+      else { const opts = [[c.x1 - r - p.x, 0], [c.x2 + r - p.x, 0], [0, c.z1 - r - p.z], [0, c.z2 + r - p.z]].sort((a, b) => Math.abs(a[0] + a[1]) - Math.abs(b[0] + b[1])); p.x += opts[0][0]; p.z += opts[0][1]; }
+    }
+  }
+  p.x = Math.max(-50, Math.min(50, p.x)); p.z = Math.max(-44, Math.min(27.2, p.z));
+}
+
+function tick() {
+  const dt = Math.min(0.05, clock.getDelta()); elapsed += dt;
+
+  /* 이동 */
+  let ix = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + stick.x;
+  let iz = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0) + stick.y;
+  const il = Math.hypot(ix, iz); if (il > 1) { ix /= il; iz /= il; }
+  const run = keys.ShiftLeft || keys.ShiftRight || Math.hypot(stick.x, stick.y) > 0.95;
+  const max = busy ? 0 : run ? 9 : 5.5;
+  vel.x += (ix * max - vel.x) * Math.min(1, dt * 10); vel.z += (iz * max - vel.z) * Math.min(1, dt * 10);
+  const p = player.g.position; p.x += vel.x * dt; p.z += vel.z * dt; collide(p);
+  const sp = Math.hypot(vel.x, vel.z);
+  if (sp > 0.3) { const ty = Math.atan2(vel.x, vel.z); let d = ty - player.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); player.g.rotation.y += d * Math.min(1, dt * 12); }
+  animPerson(player, sp, dt);
+
+  /* 카메라 */
+  camTarget.set(p.x, 0, p.z);
+  const zoom = camera.aspect < 1 ? 1.65 : camera.aspect < 1.3 ? 1.25 : 1; /* 세로 화면은 더 멀리서 */
+  const want = new THREE.Vector3(p.x, 13 * zoom, p.z + 16 * zoom);
+  camera.position.lerp(want, Math.min(1, dt * 4)); camera.lookAt(camTarget.x, 1.4, camTarget.z - 1);
+  sun.position.set(p.x - 30, 50, p.z + 20); sun.target.position.set(p.x, 0, p.z);
+
+  /* 곶이 — 뒤따라 통통 */
+  const ry = player.g.rotation.y;
+  const behind = new THREE.Vector3(p.x - Math.sin(ry) * 0.9 + Math.cos(ry) * 1.5, 0, p.z - Math.cos(ry) * 0.9 - Math.sin(ry) * 1.5);
+  gotti.position.lerp(behind, Math.min(1, dt * 3)); gotti.position.y = Math.abs(Math.sin(elapsed * 5)) * 0.35;
+  gotti.lookAt(p.x, gotti.position.y, p.z);
+
+  /* 사람들 숨쉬기 · 느낌표 */
+  const goal = currentGoal();
+  for (const [id, n] of Object.entries(NPCS)) {
+    n.p.g.children[4].position.y = 1.2 + Math.sin(elapsed * 2 + n.pos.x) * 0.02;
+    n.ex.visible = goal.id === id && goal.at === n.pos;
+    n.ex.position.y = 3.45 + Math.sin(elapsed * 4) * 0.12;
+    n.p.g.rotation.y += (Math.atan2(p.x - n.pos.x, p.z - n.pos.z) - n.p.g.rotation.y) * (p.distanceTo(n.pos) < 6 ? dt * 3 : 0);
+  }
+
+  /* 목표 · 방향 안내 */
+  beacon.position.set(goal.at.x, 0, goal.at.z); bArrow.position.y = 4.2 + Math.sin(elapsed * 4) * 0.35; bArrow.rotation.y += dt * 2;
+  bRing.scale.setScalar(1 + Math.sin(elapsed * 4) * 0.08);
+  const gd = new THREE.Vector3(goal.at.x - p.x, 0, goal.at.z - p.z), gl = gd.length();
+  guide.visible = gl > 5; if (guide.visible) { gd.normalize(); guide.position.set(p.x + gd.x * 1.6, 0.35, p.z + gd.z * 1.6); guide.rotation.set(Math.PI / 2, 0, -Math.atan2(gd.x, gd.z) + Math.PI, 'YXZ'); guide.lookAt(p.x + gd.x * 3, 0.35, p.z + gd.z * 3); guide.rotateX(Math.PI / 2); }
+
+  /* 가까운 상호작용 */
+  near = null; let best = 99;
+  for (const it of interactables()) { const d = Math.hypot(it.pos.x - p.x, it.pos.z - p.z); if (d < it.r && d < best) { best = d; near = it; } }
+  nearGotti = !near && gotti.position.distanceTo(p) < 2.6;
+  const lab = near ? near.label : nearGotti ? '곶이와 대화' : '';
+  if (!busy && lab) { ui.prompt.hidden = mobile; ui.prompt.innerHTML = `<kbd>E</kbd>${lab}`; ui.act.disabled = false; ui.act.textContent = lab; }
+  else { ui.prompt.hidden = true; ui.act.disabled = !nextKey; ui.act.textContent = nextKey ? '다음' : '말 걸기'; }
+
+  /* 물방울 */
+  dropMeshes.forEach((m, i) => {
+    if (!m.visible) return; m.position.y = 1.2 + Math.sin(elapsed * 2 + i) * 0.25; m.rotation.y += dt;
+    if (!busy && Math.hypot(m.position.x - p.x, m.position.z - p.z) < 1.4) {
+      m.visible = false; S.drops.push(i); save(); sfx.drop(); burst(m.position.clone(), '#8fd6f4', 24);
+      toast(`💧 하늘 물방울 ${S.drops.length}/8<br>${DROPS[i].t}`, 4200); refreshHud();
+    }
+  });
+
+  /* 하늘 — 스탬프 수만큼 맑아진다 */
+  skyT += (doneCount() / 4 - skyT) * Math.min(1, dt * 1.2);
+  scene.background.copy(HAZE).lerp(CLEAR, skyT); scene.fog.color.copy(scene.background);
+  scene.fog.near = 18 + skyT * 40; scene.fog.far = 70 + skyT * 150;
+  sun.intensity = 0.9 + skyT * 0.6; hemi.intensity = 0.8 + skyT * 0.35;
+  dust.material.opacity = 0.7 * (1 - skyT); dust.visible = skyT < 0.98;
+  const dpos = dust.geometry.attributes.position;
+  for (let i = 0; i < dustN; i++) { let x = dpos.getX(i) + dt * 0.8; if (x > 50) x = -50; dpos.setX(i, x); }
+  dpos.needsUpdate = true;
+  waterMat.color.set('#6f8a8f').lerp(new THREE.Color('#3f8fc9'), skyT);
+  birds.visible = skyT > 0.45;
+  if (birds.visible) { birds.position.set(((elapsed * 4) % 140) - 70, 16, 10 + Math.sin(elapsed * 0.3) * 8); birds.children.forEach((b, i) => b.children.forEach((w) => { w.rotation.z = w.userData.s * Math.sin(elapsed * 8 + i) * 0.5; })); }
+  rainbow.visible = skyT > 0.9; rainbow.children.forEach((r) => { r.material.opacity = Math.max(0, (skyT - 0.9) * 5.5); });
+  treeSpots.length && scene.children.forEach(() => {});
+
+  /* 연출 */
+  vanLamp.material = M(Math.sin(elapsed * 8) > 0 ? '#ff6b5e' : '#7a2a24');
+  flag.rotation.y = Math.sin(elapsed * 2) * 0.15;
+  if (regenFx > 0) { regenFx -= dt; kilnGlow.material.emissiveIntensity = 0.6 + Math.sin(elapsed * 14) * 0.4; } else kilnGlow.material.emissiveIntensity = 0.3;
+  dropZone.material.opacity = stepOf('regen') === 1 && (S.bags || []).length === 3 ? 0.6 + Math.sin(elapsed * 5) * 0.3 : 0.25;
+  spotMarks.forEach((m, i) => { m.visible = stepOf('consult') === 1 && !(S.spots || []).includes(i); m.position.y = 3.2 + Math.sin(elapsed * 4 + i) * 0.15; });
+  TOWERS.forEach((t, i) => { if (stepOf('regen') === 1 && !(S.bags || []).includes(i)) t.bag.rotation.y += dt; });
+  dikeCars.forEach((c) => { c.t = (c.t + dt * 0.02 * c.dir + 1) % 1; const u = (c.t - 0.5) * 220; c.m.position.set(30 + u * Math.cos(-0.28) , 0.9, 62 - u * Math.sin(-0.28) + (c.dir > 0 ? 0.6 : -0.6)); c.m.rotation.y = -0.28; });
+  const wp = water.geometry.attributes.position;
+  for (let i = 0; i < wp.count; i++) wp.setZ(i, Math.sin(wp.getX(i) * 0.12 + elapsed) * 0.12 + Math.cos(wp.getY(i) * 0.15 + elapsed * 0.8) * 0.1);
+  wp.needsUpdate = true;
+  for (let i = bursts.length - 1; i >= 0; i--) {
+    const b = bursts[i]; b.life -= dt; const a = b.pts.geometry.attributes.position;
+    b.v.forEach((v, k) => { v.y -= 9 * dt; a.setXYZ(k, a.getX(k) + v.x * dt, a.getY(k) + v.y * dt, a.getZ(k) + v.z * dt); });
+    a.needsUpdate = true; b.pts.material.opacity = Math.max(0, b.life / 1.6);
+    if (b.life <= 0) { scene.remove(b.pts); b.pts.geometry.dispose(); bursts.splice(i, 1); }
+  }
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   시작
+   ============================================================ */
+const sw = $('swatches');
+COLORS.forEach((c) => {
+  const b = document.createElement('button'); b.type = 'button'; b.style.background = c; b.setAttribute('aria-label', '옷 색 ' + c); b.setAttribute('aria-pressed', String(c === S.color));
+  b.onclick = () => { S.color = c; sw.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); player.g.children.forEach((m) => { if (m.isMesh && m.geometry.type === 'CapsuleGeometry') m.material = M(c); }); player.arms.forEach((a) => (a.children[0].material = M(c))); };
+  sw.appendChild(b);
+});
+$('nick').value = S.name;
+$('reset').onclick = () => { if (confirm('진행 기록을 지우고 처음부터 할까요?')) { localStorage.removeItem(KEY); location.reload(); } };
+$('go').onclick = () => {
+  S.name = $('nick').value.trim().slice(0, 10); save();
+  player.g.remove(nameTag); const t = label(S.name || '체험자', { bg: 'rgba(4,24,43,.75)', size: 0.55 }); t.position.y = 2.75; player.g.add(t);
+  $('start').hidden = true; $('hud').hidden = false; $('top').hidden = false;
+  if (mobile) { $('joy').hidden = false; $('act').hidden = false; }
+  tone([523, 784], 0.16);
+  refreshHud();
+  if (!S.met) setTimeout(() => toast('🌱 곶이: 안녕! 재단 사옥 앞 <b>안내 직원</b>에게 먼저 가 보자!', 4200), 600);
+};
+$('b-about').onclick = showAbout;
+$('b-help').onclick = showHelp;
+$('b-sound').onclick = (e) => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? '🔊' : '🔇'; e.currentTarget.setAttribute('aria-pressed', String(soundOn)); };
+ui.cardbox.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) closeCard(); });
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+/* 이어 하기 — 이미 끝낸 진행 상태 반영 */
+(S.bags || []).forEach((i) => { if (stepOf('regen') === 1) TOWERS[i].bag.visible = false; });
+if (S.stamps.regen) TOWERS.forEach((t) => { t.bag.children[0].material = M('#7ee3b4'); });
+
+window.__ready = true;
+if (location.search.includes('debug')) window.__cabc = { S, player, interactables, currentGoal, get near() { return near; }, action, mgIsokinetic, mgSort, mgOdor };
+refreshHud();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 /* 재단법인 맑고푸른곶 — 서비스 워커 (scripts/html/pwa.mjs가 내보낼 때마다 만든다) */
-const CACHE = "cabc-58ebaa9151";
+const CACHE = "cabc-bfc05ee396";
 const CDN = "cabc-cdn";
-const PRECACHE = ["./","about.html","assets/motion.js","assets/style.css","consult.html","equipment.html","icons/apple-touch-icon.png","icons/favicon-32.png","icons/icon-192.png","icons/icon-512.png","icons/icon.svg","icons/maskable-512.png","images/edu-group.jpg","images/edu-lecture.jpg","images/eq-icp-lg.jpg","images/eq-icp.jpg","images/eq-sampler-lg.jpg","images/eq-sampler.jpg","images/favicon.svg","images/field-diag.jpg","images/field-measure.jpg","images/field-support.jpg","images/logo.png","images/photo-birds.jpg","images/photo-center.jpg","images/photo-sunset.jpg","images/regen-center.jpg","images/regen-complex.jpg","images/regen-energy.jpg","index.html","manifest.webmanifest","measure.html","regen.html"];
+const PRECACHE = ["./","about.html","assets/motion.js","assets/style.css","consult.html","equipment.html","game/index.html","game/vendor/three/LICENSE","icons/apple-touch-icon.png","icons/favicon-32.png","icons/icon-192.png","icons/icon-512.png","icons/icon.svg","icons/maskable-512.png","images/edu-group.jpg","images/edu-lecture.jpg","images/eq-icp-lg.jpg","images/eq-icp.jpg","images/eq-sampler-lg.jpg","images/eq-sampler.jpg","images/favicon.svg","images/field-diag.jpg","images/field-measure.jpg","images/field-support.jpg","images/logo.png","images/photo-birds.jpg","images/photo-center.jpg","images/photo-sunset.jpg","images/regen-center.jpg","images/regen-complex.jpg","images/regen-energy.jpg","index.html","manifest.webmanifest","measure.html","regen.html"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
